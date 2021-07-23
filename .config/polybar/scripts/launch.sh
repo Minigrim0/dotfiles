@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
-# Terminate already running bar instances
+source $HOME/.zshlocalrc
 killall -q polybar
-# If all your bars have ipc enabled, you can also use 
-# polybar-msg cmd quit
 
-# Launch bar1 and bar2
-MONITOR=DP-4 polybar --config=$HOME/.config/polybar/config.ini --reload top-DP >>/tmp/polybar1.log # 2>&1 &
-MONITOR=DP-4 polybar --config=$HOME/.config/polybar/config.ini --reload bottom-DP >>/tmp/polybar2.log # 2>&1 &
-MONITOR=HDMI-0 polybar --config=$HOME/.config/polybar/config.ini --reload top-HDMI >>/tmp/polybar3.log # 2>&1 &
+if [[ $MONITOR_AMOUNT -eq 1 ]]; then
+    for m in $(polybar --list-monitors | cut -d":" -f1); do
+        MONITOR=$m polybar --config=$HOME/.config/polybar/config.ini --reload top-DP >>/tmp/polybar1.log 2>&1 &
+        MONITOR=$m polybar --config=$HOME/.config/polybar/config.ini --reload bottom-DP >>/tmp/polybar2.log 2>&1 &
+    done
+else
+    MONITOR=DP-4 polybar --config=$HOME/.config/polybar/config.ini --reload top-DP >>/tmp/polybar1.log 2>&1 &
+    MONITOR=DP-4 polybar --config=$HOME/.config/polybar/config.ini --reload bottom-DP >>/tmp/polybar2.log 2>&1 &
+    MONITOR=HDMI-0 polybar --config=$HOME/.config/polybar/config.ini --reload top-HDMI >>/tmp/polybar3.log 2>&1 &
+fi
 
 echo "Bars launched..."
