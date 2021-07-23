@@ -1,9 +1,12 @@
 import fontawesome as fa
+from hereby import Here
 
 import requests
 import json
 
-with open('~/.config/polybar/py.env.json') as key:
+here = Here(__file__)
+
+with open(here.abspath('.env.json')) as key:
     API_KEY = json.load(key).get("OPENWEATHER_KEY", None)
 
 if API_KEY is None:
