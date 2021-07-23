@@ -1,7 +1,12 @@
+import os
+import glob
 import socket
 import time
 
 import fontawesome as fa
+
+TINC_NETNAME = os.environ.get("TINC_NETNAME", "teamname")
+TINC_LOCALHOST = os.environ.get("TINC_LOCALHOST", None)
 
 
 class Socket(object):
@@ -29,11 +34,23 @@ def is_up(host: str) -> bool:
         s.connect(host, 22)
         s.shutdown()
         return True
-    except socket.timeout:
+    except Exception:
         return False
 
 
-hosts = [("cloud", "10.0.0.1"), ("laptop", "10.0.0.3")]
+hosts: list[tuple] = []
+
+for host in glob.glob(f"/etc/tinc/{TINC_NETNAME}/hosts/*"):
+    hostname = host.split("/")[-1]
+    if hostname == TINC_LOCALHOST:
+        continue
+    with open(host) as config:
+        for line in config.readlines():
+            splitted = line.split()
+            if splitted[0] == "Subnet":
+                ip = splitted[-1].split("/")[0]
+                hosts.append((hostname, ip))
+                break
 
 messages = []
 for host in hosts:
