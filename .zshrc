@@ -21,7 +21,6 @@ source $ZSH/oh-my-zsh.sh
 
 alias irc="TERM=xterm && ssh minigrim0@irc.urlab.be"
 alias activate="source */bin/activate"
-alias autoremove="~/.config/autoremove.sh"
 
 # Change directory and list its content
 lcd(){
@@ -38,6 +37,9 @@ openport(){
 listall(){
     LC_ALL=C pacman -Qi | awk '/^Name/{name=$3} /^Installed Size/{print $4$5, name}' | sort -h
 }
+autoremove(){
+    sudo pacman -Rcns $(pacman -Qdtq)
+}
 searchall(){
     listall | grep $1
 }
@@ -50,3 +52,5 @@ cat(){
 
 alias config='/usr/bin/git --git-dir=/home/minigrim0/.cfg/ --work-tree=/home/minigrim0'
 alias activate="source */bin/activate"
+
+source $HOME/.zshlocalrc
