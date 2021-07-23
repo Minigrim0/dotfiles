@@ -152,7 +152,7 @@ bindsym $mod+Shift+r restart
 # exit i3 (logs you out of your X session)
 bindsym $mod+Shift+l exec "i3-nagbar -t warning -m 'You pressed the exit shortcut. Do you really want to exit i3? This will end your X session.' -B 'Yes, exit i3' 'i3-msg exit'"
 
-set $Locker i3lock-fancy-rapid 2 3 
+set $Locker i3lock-fancy-rapid 2 3
 bindsym $mod+l exec --no-startup-id $Locker
 
 set $mode_system  (l) , (e) , (s) , (r) , (S) 
