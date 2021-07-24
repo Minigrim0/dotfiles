@@ -1,6 +1,8 @@
 import dbus
+from hereby import Here
 
-trunclen = 50
+trunclen = 30
+here = Here(__file__)
 
 try:
     session_bus = dbus.SessionBus()
@@ -17,16 +19,10 @@ try:
         "org.mpris.MediaPlayer2.Player", "Metadata"
     )
 
-    artist = metadata['xesam:artist'][0]
-    song = metadata['xesam:title']
+    artist = str(metadata['xesam:artist'][0])
+    song = str(metadata['xesam:title'])
 
-    if len(song) > trunclen:
-        song = song[0:trunclen]
-        song += '...'
-        if ('(' in song) and (')' not in song):
-            song += ')'
+    print(f"{artist}: {song}")
 
-    output = artist + ': ' + song
-    print(output)
-except:
+except Exception:
     print("...")
