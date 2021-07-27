@@ -3,8 +3,8 @@
 # github.com/justbuchanan/i3scripts
 #
 # This script is used to dynamically rename workspaces in i3. When run, it
-# presents a text field popup using zenity, in which you can type a new name for
-# the workspace. It is compatible with the autoname_workspaces script and
+# presents a text field popup using zenity, in which you can type a new name
+# for the workspace. It is compatible with the autoname_workspaces script and
 # renames only the "shortname" of the workspace, keeping the number and window
 # icons in place.
 #
@@ -19,13 +19,17 @@ import logging
 import subprocess as proc
 import sys
 
-from util import *
+from utils import (
+    focused_workspace, parse_workspace_name,
+    construct_workspace_name, NameParts
+)
 
 
 def show_name_dialog(current_shortname):
     try:
-        # use zenity to show a text box asking the user for a new workspace name
-        prompt_title = "Rename Workspace:" if current_shortname == None \
+        # use zenity to show a text box asking the user for a new workspace
+        # name
+        prompt_title = "Rename Workspace:" if current_shortname is None \
                             else "Rename Workspace '%s':" % current_shortname
         response = proc.check_output(
             ['zenity', '--entry', "--text={}".format(prompt_title)])
@@ -41,7 +45,7 @@ def show_name_dialog(current_shortname):
 
         return new_shortname
 
-    except proc.CalledProcessError as e:
+    except proc.CalledProcessError:
         logging.info("Cancelled by user, exiting...")
         sys.exit(1)
 

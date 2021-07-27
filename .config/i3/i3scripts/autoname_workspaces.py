@@ -17,7 +17,8 @@
 #
 # Installation:
 # * Download this repo and place it in ~/.config/i3/ (or anywhere you want)
-# * Add "exec_always ~/.config/i3/i3scripts/autoname_workspaces.py &" to your i3 config
+# * Add "exec_always ~/.config/i3/i3scripts/autoname_workspaces.py &" to your
+# i3 config
 # * Restart i3: $ i3-msg restart
 #
 # Configuration:
@@ -34,86 +35,13 @@ import i3ipc
 import logging
 import signal
 import sys
-import fontawesome as fa
+from icons import WINDOW_ICONS
 
-from util import *
+from utils import (
+    parse_workspace_name, xprop, format_icon_list,
+    construct_workspace_name, NameParts
+)
 
-# Add icons here for common programs you use.  The keys are the X window class
-# (WM_CLASS) names (lower-cased) and the icons can be any text you want to
-# display.
-#
-# Most of these are character codes for font awesome:
-#   http://fortawesome.github.io/Font-Awesome/icons/
-#
-# If you're not sure what the WM_CLASS is for your application, you can use
-# xprop (https://linux.die.net/man/1/xprop). Run `xprop | grep WM_CLASS`
-# then click on the application you want to inspect.
-WINDOW_ICONS = {
-    'alacritty': fa.icons['terminal'],
-    'atom': fa.icons['code'],
-    'banshee': fa.icons['play'],
-    'blender': fa.icons['cube'],
-    'chromium': fa.icons['chrome'],
-    'cura': fa.icons['cube'],
-    'darktable': fa.icons['image'],
-    'discord': fa.icons['discord'],
-    'eclipse': fa.icons['code'],
-    'emacs': fa.icons['code'],
-    'eog': fa.icons['image'],
-    'evince': fa.icons['file-pdf'],
-    'evolution': fa.icons['envelope'],
-    'feh': fa.icons['image'],
-    'file-roller': fa.icons['compress'],
-    'filezilla': fa.icons['server'],
-    'firefox': fa.icons['firefox'],
-    'firefox-esr': fa.icons['firefox'],
-    'gimp': fa.icons['image'],
-    'gimp-2.8': fa.icons['image'],
-    'gnome-control-center': fa.icons['toggle-on'],
-    'gnome-terminal-server': fa.icons['terminal'],
-    'google-chrome': fa.icons['chrome'],
-    'gpick': fa.icons['eye-dropper'],
-    'imv': fa.icons['image'],
-    'insomnia': fa.icons['globe'],
-    'java': fa.icons['code'],
-    'jetbrains-idea': fa.icons['code'],
-    'jetbrains-studio': fa.icons['code'],
-    'keepassxc': fa.icons['key'],
-    'keybase': fa.icons['key'],
-    'kicad': fa.icons['microchip'],
-    'kitty': fa.icons['terminal'],
-    'libreoffice': fa.icons['file-alt'],
-    'lua5.1': fa.icons['moon'],
-    'mpv': fa.icons['tv'],
-    'mupdf': fa.icons['file-pdf'],
-    'mysql-workbench-bin': fa.icons['database'],
-    'nautilus': fa.icons['copy'],
-    'nemo': fa.icons['copy'],
-    'openscad': fa.icons['cube'],
-    'pavucontrol': fa.icons['volume-up'],
-    'postman': fa.icons['space-shuttle'],
-    'rhythmbox': fa.icons['play'],
-    'robo3t': fa.icons['database'],
-    'signal': fa.icons['comment'],
-    'slack': fa.icons['slack'],
-    'slic3r.pl': fa.icons['cube'],
-    'spotify': fa.icons['spotify'],  # could also use the 'spotify' icon
-    'steam': fa.icons['steam'],
-    'subl': fa.icons['file-alt'],
-    'subl3': fa.icons['file-alt'],
-    'sublime_text': fa.icons['file-alt'],
-    'VSCodium': fa.icons['code'],
-    'thunar': fa.icons['copy'],
-    'thunderbird': fa.icons['envelope'],
-    'totem': fa.icons['play'],
-    'urxvt': fa.icons['terminal'],
-    'termite': fa.icons['terminal'],
-    'xfce4-terminal': fa.icons['terminal'],
-    'xournal': fa.icons['file-alt'],
-    'yelp': fa.icons['code'],
-    'zenity': fa.icons['window-maximize'],
-    'zoom': fa.icons['comment'],
-}
 
 # This icon is used for any application not in the list above
 DEFAULT_ICON = '*'
@@ -132,7 +60,7 @@ def ensure_window_icons_lowercase():
 def icon_for_window(window):
     # Try all window classes and use the first one we have an icon for
     classes = xprop(window.window, 'WM_CLASS')
-    if classes != None and len(classes) > 0:
+    if classes is not None and len(classes) > 0:
         for cls in classes:
             cls = cls.lower()  # case-insensitive matching
             if cls in WINDOW_ICONS:
@@ -156,9 +84,9 @@ def rename_workspaces(i3, icon_list_format='default'):
         icon_list = [icon_for_window(w) for w in workspace.leaves()]
         new_icons = format_icon_list(icon_list, icon_list_format)
 
-        # As we enumerate, leave one gap in workspace numbers between each monitor.
-        # This leaves a space to insert a new one later.
-        if ws_info.output != prev_output and prev_output != None:
+        # As we enumerate, leave one gap in workspace numbers between each
+        # monitor. This leaves a space to insert a new one later.
+        if ws_info.output != prev_output and prev_output is not None:
             n += 1
         prev_output = ws_info.output
 
@@ -193,25 +121,26 @@ def on_exit(i3):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description=
-        "Rename workspaces dynamically to show icons for running programs.")
+        description="Rename workspaces dynamically to show icons "
+        "for running programs."
+    )
     parser.add_argument(
         '--norenumber_workspaces',
         action='store_true',
         default=False,
-        help=
-        "Disable automatic workspace re-numbering. By default, workspaces are automatically re-numbered in ascending order."
+        help="Disable automatic workspace re-numbering. "
+        "By default, workspaces are automatically "
+        "re-numbered in ascending order."
     )
     parser.add_argument(
         '--icon_list_format',
         type=str,
         default='default',
-        help=
-        "The formatting of the list of icons."
+        help="The formatting of the list of icons."
         "Accepted values:"
         "    - default: no formatting,"
-        "    - mathematician: factorize with superscripts (e.g. aababa -> a⁴b²),"
-        "    - chemist: factorize with subscripts (e.g. aababa -> a₄b₂)."
+        "    - mathematician: factorize w/ superscripts (e.g. aababa -> a⁴b²),"
+        "    - chemist: factorize w/ subscripts (e.g. aababa -> a₄b₂)."
     )
     args = parser.parse_args()
 

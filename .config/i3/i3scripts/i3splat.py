@@ -3,8 +3,8 @@
 # github.com/justbuchanan/i3scripts
 #
 # This module provides a compact way to specify layouts for i3wm and launch the
-# corresponding programs. Create a Workspace object with the containers and apps
-# you want, then call launch().
+# corresponding programs. Create a Workspace object with the containers and
+# apps you want, then call launch().
 #
 # Here's an example program:
 #
@@ -41,7 +41,6 @@ import os
 import json
 import time
 import shlex
-import sys
 
 
 class Node:
@@ -69,7 +68,7 @@ class App(Node):
         self.command = command
 
         self.swallows = [{'class': '^%s$' % xClass}]
-        if xInstance != None:
+        if xInstance is not None:
             self.swallows[0]['instance'] = '^%s$' % xInstance
 
 
@@ -118,14 +117,14 @@ class Workspace:
         subprocess.check_call(["i3-msg", "append_layout", fname])
 
     # If delay is provided, wait a small amount of time between each app launch
-    # to give it time to load its window. This helps ensure that they get placed
-    # in the appropriate containers for apps that can't be launched with a
-    # custom instance name.
+    # to give it time to load its window. This helps ensure that they get
+    # placed in the appropriate containers for apps that can't be launched
+    # with a custom instance name.
     def run_apps(self, delay=None):
         for app in self.iterate_apps():
-            if app.command != None:
+            if app.command is not None:
                 app.command()
-                if delay != None:
+                if delay is not None:
                     time.sleep(delay)
 
 
@@ -154,7 +153,7 @@ def _flatten_tuples(pairs):
 
 
 # Apps
-################################################################################
+###############################################################################
 
 
 def _cmd(args):
@@ -163,15 +162,15 @@ def _cmd(args):
     return lambda: subprocess.Popen(joined, shell=True)
 
 
-# Note: specify the name property to ensure that i3 can uniquely match each one.
-# Otherwise it's left up to chance that they launch windows in the order that
-# they are called, which may not always be the case.
+# Note: specify the name property to ensure that i3 can uniquely match each
+# one. Otherwise it's left up to chance that they launch windows in the order
+# that they are called, which may not always be the case.
 def urxvt(wdir="~", command=None, name="urxvt", interactive=True):
     shell = os.environ["SHELL"]
 
     wdir = os.path.expanduser(wdir)
     args = ["urxvt", "-cd", shlex.quote(wdir), "-name", name, "-e", shell]
-    if command != None:
+    if command is not None:
         args.append("-c")
         args.append(shlex.quote("%s; %s -i" % (command, shell)))
 

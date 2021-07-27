@@ -5,12 +5,12 @@
 import i3ipc
 import argparse
 import logging
-from util import *
+from utils import focused_workspace
 
 
-# Finds the smallest workspace number such that it will open to the right of the
-# existing workspaces on the current monitor. For example if the current monitor
-# has workspace numbers [1,3,4], this function will return 5.
+# Finds the smallest workspace number such that it will open to the right of
+# the existing workspaces on the current monitor. For example if the current
+# monitor has workspace numbers [1,3,4], this function will return 5.
 def find_next_ws_num_on_monitor(i3):
     focused_monitor = focused_workspace(i3).output
     logging.info('focused monitor: %s' % focused_monitor)
@@ -36,9 +36,10 @@ def new_workspace(move_focused=False):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="""
-        Jump to a new workspace to the right of the existing ones on the current  monitor."""
-                                     )
+    parser = argparse.ArgumentParser(
+        description="Jump to a new workspace "
+        "to the right of the existing ones on the current  monitor."""
+    )
     parser.add_argument(
         '--move_focused',
         '-m',
