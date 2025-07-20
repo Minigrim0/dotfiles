@@ -88,7 +88,7 @@ $text-muted: #888888;
     border-radius: 6px;
     margin: 3px 0;
     transition: all 0.2s ease;
-    font-size: 18px;
+    font-size: 24px;
 
     .button-open {
         background: $cinnabar;
@@ -151,14 +151,14 @@ $text-muted: #888888;
 
     .time-display {
         color: $text-primary;
-        font-size: 11px;
+        font-size: 16px;
         font-weight: bold;
         margin-bottom: 2px;
     }
 
     .date-display {
         color: $text-secondary;
-        font-size: 9px;
+        font-size: 14px;
     }
 }
 
@@ -219,7 +219,7 @@ $text-muted: #888888;
         border-radius: 6px;
         min-width: 40px;
         transition: all 0.2s ease;
-        font-size: 11px;
+        font-size: 24px;
 
         &:hover {
             background: $jasper;

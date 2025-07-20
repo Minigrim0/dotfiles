@@ -14,7 +14,10 @@
               "")
       (button :onclick "systemctl suspend & eww update power-menu-open=false"
               :class "power-option"
-              "")
+              "")
+      (button :onclick "systemctl reboot & eww update power-menu-open=false"
+              :class "power-option"
+              "")
       (button :onclick "systemctl poweroff"
               :class "power-option shutdown"
               ""))))
