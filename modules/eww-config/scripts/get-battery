@@ -1,0 +1,21 @@
+#!/bin/bash
+# Using acpi for battery information
+battery_info=$(acpi -b 2>/dev/null | head -1)
+
+if [ -n "$battery_info" ]; then
+    # Extract percentage
+    battery_level=$(echo "$battery_info" | grep -o '[0-9]*%' | tr -d '%')
+    
+    # Extract status
+    if echo "$battery_info" | grep -q "Charging"; then
+        echo "${battery_level}%+"
+    elif echo "$battery_info" | grep -q "Discharging"; then
+        echo "${battery_level}%"
+    elif echo "$battery_info" | grep -q "Full"; then
+        echo "100%"
+    else
+        echo "${battery_level}%"
+    fi
+else
+    echo "AC"
+fi

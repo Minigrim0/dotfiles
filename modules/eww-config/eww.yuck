@@ -1,0 +1,85 @@
+;; Variables
+(defvar power-menu-open false)
+(defvar system-menu-open false)
+(defvar brightness-menu-open false)
+(defvar volume-menu-open false)
+
+;; Polling variables - with fallbacks
+(defpoll volume :interval "1s" :initial "50" "scripts/get-volume")
+(defpoll brightness :interval "2s" :initial "50" "scripts/get-brightness")
+(defpoll wifi :interval "3s" :initial "WiFi" "scripts/get-wifi")
+(defpoll battery :interval "5s" :initial "Battery" "scripts/get-battery")
+(defpoll cpu-temp :interval "3s" :initial "45" "scripts/get-temp")
+(defpoll filesystem :interval "10s" :initial "/ -" "scripts/get-filesystem")
+(defpoll time :interval "1s" :initial "12:00" "date '+%H:%M'")
+(defpoll date :interval "30s" :initial "01/01" "date '+%m/%d'")
+
+;; Listen to hyprland workspaces - with fallback
+(deflisten workspaces :initial '[{"id": 1}]' "scripts/get-workspaces")
+(deflisten current-workspace :initial "1" "scripts/get-active-workspace")
+
+;; Wofi launcher button (top)
+(defwidget launcher []
+  (button :class "launcher-btn"
+          :onclick "wofi --show drun &"
+          :tooltip "Applications"
+    "󱗼"))
+
+;; Workspace widget
+(defwidget workspaces []
+  (box :class "workspaces"
+       :orientation "v"
+       :space-evenly false
+       :valign "start"
+    (for workspace in workspaces
+      (button :class "${workspace.id == current-workspace ? "workspace-active" : "workspace-inactive"}"
+              :onclick "hyprctl dispatch workspace ${workspace.id} &"
+              :tooltip "Workspace ${workspace.id}"
+        "${workspace.id}"))))
+
+;; System menu
+(include "./widgets/system-menu.yuck")
+
+;; Brightness button and menu
+(include "./widgets/brightness.yuck")
+
+;; Volume button and menu
+(include "./widgets/volume.yuck")
+
+;;Power menu
+(include "./widgets/power-menu.yuck")
+
+;; Main bar - vertical layout with proper alignment
+(defwidget bar []
+  (box :orientation "v" :class "bar-container"
+    ;; Top section
+    (box :orientation "v" :space-evenly false :valign "start"
+      (launcher)
+      (workspaces))
+
+    ;; Bottom section - aligned to bottom
+    (box :orientation "v" :space-evenly false :valign "end"
+      (system-menu)
+      (system-menu-button)
+      (brightness-menu)
+      (brightness-button)
+      (volume-menu)
+      (volume-button)
+      (systray :orientation "v" :icon-size 15)
+      (power-menu)
+      (power-button)
+      (box :class "datetime" :orientation "v" :space-evenly false
+        (label :class "time-display" :text "${time}")
+        (label :class "date-display" :text "${date}")))))
+
+;; Main window - left side vertical bar
+(defwindow main-bar
+  :monitor 0
+  :windowtype "dock"
+  :geometry (geometry :x "0.2%"
+                      :y "0.5%"
+                      :width "1%"
+                      :height "99%"
+                      :anchor "left center")
+  :exclusive true
+  (bar))

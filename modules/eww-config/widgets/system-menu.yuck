@@ -1,0 +1,22 @@
+;; System menu button
+(defwidget system-menu-button []
+  (button :class "system-btn ${system-menu-open ? "" : "button-open"}"
+          :onclick "eww update system-menu-open=${!system-menu-open} &"
+    ""))
+
+;; System menu content
+(defwidget system-menu []
+  (revealer :reveal system-menu-open :transition "slideup" :duration "300ms"
+    (box :class "system-menu" :orientation "v" :space-evenly false
+      (box :class "system-info" :orientation "v"
+        (label :class "info-label" :text "")
+        (label :class "info-value" :text "${cpu-temp}°C"))
+      (box :class "system-info" :orientation "v"
+        (label :class "info-label" :text "󰋊")
+        (label :class "info-value" :text "${filesystem}"))
+      (box :class "system-info" :orientation "v" :tooltip "${wifi}"
+        (label :class "info-label" :text "󰖩")
+        (label :class "info-value" :text "WiFi"))
+      (box :class "system-info" :orientation "v"
+        (label :class "info-label" :text "󰁹")
+        (label :class "info-value" :text "${battery}")))))

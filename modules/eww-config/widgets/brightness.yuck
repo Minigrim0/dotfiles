@@ -1,0 +1,17 @@
+(defwidget brightness-button []
+  (button :class "brightness-btn"
+          :onclick "eww update brightness-menu-open=${!brightness-menu-open} &"
+          :tooltip "Brightness: ${brightness}%"
+    ""))
+
+(defwidget brightness-menu []
+  (revealer :reveal brightness-menu-open :transition "slideup" :duration "300ms"
+    (box :class "brightness-menu" :orientation "v" :space-evenly false
+	(label :text "${brightness}%")
+	(scale :class "brightness-slider"
+             :value brightness
+             :min 1
+             :max 100
+             :orientation "v"
+             :flipped true
+             :onchange "brightnessctl set {}% &"))))

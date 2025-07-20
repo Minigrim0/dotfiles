@@ -1,0 +1,24 @@
+#!/bin/bash
+# Using sensors JSON output
+sensor_data=$(sensors -j 2>/dev/null)
+
+if [ -n "$sensor_data" ]; then
+    # Try to get CPU temperature from various common sources
+    temp=$(echo "$sensor_data" | jq -r '
+        # Try k10temp (AMD), coretemp (Intel), or thinkpad sensors
+        (.["k10temp-pci-00c3"].Tctl.temp1_input // 
+         .["coretemp-isa-0000"]["Package id 0"].temp1_input //
+         .["thinkpad-isa-0000"].CPU.temp1_input //
+         .["acpitz-acpi-0"].temp1.temp1_input //
+         empty) | floor
+    ' 2>/dev/null)
+    
+    # If jq parsing fails or returns null, try alternative approach
+    if [ -z "$temp" ] || [ "$temp" = "null" ]; then
+        temp=$(echo "$sensor_data" | jq -r 'to_entries[] | select(.value | has("CPU") or has("Tctl") or has("Package id 0")) | .value | to_entries[] | select(.key | contains("temp1_input") or contains("Tctl") or contains("CPU")) | .value.temp1_input // .value | floor' 2>/dev/null | head -1)
+    fi
+    
+    echo "${temp:-0}"
+else
+    echo "0"
+fi

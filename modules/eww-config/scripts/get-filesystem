@@ -1,0 +1,3 @@
+#!/bin/bash
+df -h / | awk 'NR==2 {print "/ " $4 }'
+df -h /homr | awk 'NR==2 {print "/home " $4 }'

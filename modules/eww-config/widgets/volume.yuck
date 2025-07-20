@@ -1,0 +1,19 @@
+(defwidget volume-button []
+  (button :class "volume-btn"
+          :onclick "eww update volume-menu-open=${!volume-menu-open} &"
+          :tooltip "Volume: ${volume}"
+    ""))
+
+(defwidget volume-menu []
+  (revealer :reveal volume-menu-open :transition "slideup" :duration "300ms"
+    (box :class "volume-menu" :orientation "v" :space-evenly false
+	(label :text {volume == "Muted" ? "Muted" : "${volume}%"})
+	(scale :class "volume-slider"
+             :value {volume == "Muted" ? 0 : volume}
+             :min 0
+             :max 100
+             :orientation "v"
+             :flipped true
+             :onchange "pactl set-sink-volume 0 $(printf %.0f {})%"))))
+
+

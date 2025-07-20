@@ -1,0 +1,11 @@
+#!/bin/bash
+socat -U - UNIX-CONNECT:$XDG_RUNTIME_DIR/hypr/$HYPRLAND_INSTANCE_SIGNATURE/.socket2.sock | while read -r line; do
+    case ${line%>>*} in
+        "workspace")
+            hyprctl workspaces -j | jq 'sort_by(.id)' | jq -c 'map({id: .id, urgent: false})'
+            ;;
+        "createworkspace"|"destroyworkspace")
+            hyprctl workspaces -j | jq 'sort_by(.id)' | jq -c 'map({id: .id, urgent: false})'
+            ;;
+    esac
+done

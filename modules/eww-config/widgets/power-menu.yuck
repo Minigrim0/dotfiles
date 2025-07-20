@@ -1,0 +1,20 @@
+;; Power button
+(defwidget power-button []
+  (button :class "power-btn"
+          :onclick "eww update power-menu-open=${!power-menu-open} &"
+          :tooltip "Power Menu"
+    ""))
+
+;; Power menu
+(defwidget power-menu []
+  (revealer :reveal power-menu-open :transition "slideup" :duration "300ms"
+    (box :class "power-menu" :orientation "v" :space-evenly false
+      (button :onclick "hyprlock & eww update power-menu-open=false"
+              :class "power-option"
+              "")
+      (button :onclick "systemctl suspend & eww update power-menu-open=false"
+              :class "power-option"
+              "")
+      (button :onclick "systemctl poweroff"
+              :class "power-option shutdown"
+              ""))))

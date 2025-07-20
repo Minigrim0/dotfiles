@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Kill existing stalonetray instances
+pkill stalonetray
+
+# Wait a moment for cleanup
+sleep 0.5
+
+# Get screen dimensions using Hyprland/Wayland tools
+if command -v hyprctl >/dev/null 2>&1; then
+    SCREEN_HEIGHT=$(hyprctl monitors -j | jq -r '.[0].height')
+elif command -v wlr-randr >/dev/null 2>&1; then
+    SCREEN_HEIGHT=$(wlr-randr | grep -oP '\d+x\K\d+' | head -1)
+else
+    # Fallback to a reasonable default
+    SCREEN_HEIGHT=1080
+fi
+
+# Position the tray in the bottom section of the sidebar
+# Calculate position to align with other bottom buttons
+TRAY_HEIGHT=60
+BOTTOM_PADDING=120  # Space for power button and other bottom elements
+TRAY_Y=$((SCREEN_HEIGHT - BOTTOM_PADDING - TRAY_HEIGHT))
+
+# Launch stalonetray with vertical layout for left sidebar
+stalonetray \
+    --geometry "40x${TRAY_HEIGHT}+65+${TRAY_Y}" \
+    --background "#191E28" \
+    --icon-size 16 \
+    --max-geometry "40x0" \
+    --no-shrink \
+    --sticky \
+    --window-type dock \
+    --window-layer bottom \
+    --skip-taskbar \
+    --vertical &
+
+echo "System tray launched at position: 65+${TRAY_Y} (vertical mode)"
+echo "Screen height detected: ${SCREEN_HEIGHT}px"

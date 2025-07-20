@@ -1,0 +1,16 @@
+# Local configuration files that contain personal information
+.git-config.nix
+
+# Build outputs and symlinks
+result
+result-*
+
+# Temporary files
+*.tmp
+*.swp
+*.swo
+*~
+
+# OS specific files
+.DS_Store
+Thumbs.db
