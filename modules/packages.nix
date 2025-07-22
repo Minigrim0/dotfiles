@@ -22,5 +22,16 @@
     playerctl
     zoxide
     libnotify  # provides notify-send
+    thunderbird
+    mate.caja
+    gimp3
+    vlc
+    signal-desktop
+    slack
+    discord
+    stacer
+    clamav
+    texliveFull
+    godot
   ];
 }

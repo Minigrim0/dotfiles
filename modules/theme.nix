@@ -4,39 +4,39 @@
   # GTK theming
   gtk = {
     enable = true;
-    
+
     theme = {
       name = "Adwaita-dark";
       package = pkgs.gnome-themes-extra;
     };
-    
+
     iconTheme = {
       name = "Papirus-Dark";
       package = pkgs.papirus-icon-theme;
     };
-    
+
     cursorTheme = {
       name = "Bibata-Modern-Classic";
       package = pkgs.bibata-cursors;
       size = 24;
     };
-    
+
     font = {
       name = "Liberation Sans";
       size = 11;
     };
-    
+
     gtk3.extraConfig = {
-      gtk-application-prefer-dark-theme = 1;
+      gtk-application-prefer-dark-theme = true;
       gtk-button-images = 1;
       gtk-menu-images = 1;
     };
-    
+
     gtk4.extraConfig = {
-      gtk-application-prefer-dark-theme = 1;
+      gtk-application-prefer-dark-theme = true;
     };
   };
-  
+
   # Qt theming
   qt = {
     enable = true;
@@ -46,7 +46,7 @@
       package = pkgs.adwaita-qt;
     };
   };
-  
+
   # Cursor theme for Wayland
   home.pointerCursor = {
     name = "Bibata-Modern-Classic";
@@ -55,7 +55,7 @@
     gtk.enable = true;
     x11.enable = true;
   };
-  
+
   # Install theme packages
   home.packages = with pkgs; [
     gnome-themes-extra
@@ -63,7 +63,7 @@
     bibata-cursors
     adwaita-qt
   ];
-  
+
   # Environment variables for consistent theming
   home.sessionVariables = {
     GTK_THEME = "Adwaita:dark";

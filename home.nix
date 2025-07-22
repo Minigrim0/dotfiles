@@ -14,6 +14,11 @@
   # want to update the value, then make sure to first check the Home Manager
   # release notes.
 
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
+    "discord"
+    "slack"
+  ];
+
   imports = [
     ./modules/alacritty.nix
     ./modules/dunst.nix
@@ -27,6 +32,7 @@
     ./modules/theme.nix
     ./modules/wofi.nix
     ./.git-config.nix
+    ./modules/zeditor.nix
   ];
 
   fonts.fontconfig.enable = true;
