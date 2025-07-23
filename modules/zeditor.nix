@@ -1,11 +1,15 @@
-{pkgs, lib, ... }:
+{ pkgs, lib, ... }:
 
 {
+  home.packages = with pkgs; [
+    zed-editor
+  ];
+
   programs.zed-editor = {
     enable = true;
 
     ## This populates the userSettings "auto_install_extensions"
-    extensions = ["nix" "toml" "tex" "make"];
+    extensions = [ "nix" "toml" "tex" "make" ];
 
     userSettings = {
       assistant = {
@@ -31,13 +35,13 @@
         copy_on_select = false;
         dock = "bottom";
         detect_venv = {
-            on = {
-                directories = [".env" "env" ".venv" "venv"];
-                activate_script = "default";
-            };
+          on = {
+            directories = [ ".env" "env" ".venv" "venv" ];
+            activate_script = "default";
+          };
         };
         env = {
-            TERM = "alacritty";
+          TERM = "alacritty";
         };
         font_family = "AnonymicePro Nerd Font";
         font_features = null;
@@ -47,20 +51,50 @@
         button = false;
         shell = "system";
         toolbar = {
-            title = true;
+          title = true;
         };
         working_directory = "current_project_directory";
       };
 
       lsp = {
+        pylsp = {
+          binary = {
+            path = "${pkgs.python3Packages.python-lsp-server}/bin/pylsp";
+          };
+        };
+
         rust-analyzer = {
           binary = {
             path_lookup = true;
           };
         };
-        nix = {
+
+        nixd = {
           binary = {
-            path_lookup = true;
+            path = "${pkgs.nixd}/bin/nixd";
+          };
+          settings = {
+            nixd = {
+              nixpkgs = {
+                expr = "import <nixpkgs> { }";
+              };
+              formatting = {
+                command = [ "${pkgs.nixpkgs-fmt}/bin/nixpkgs-fmt" ];
+              };
+            };
+          };
+        };
+
+        nil = {
+          binary = {
+            path = "${pkgs.nil}/bin/nil";
+          };
+          settings = {
+            nil = {
+              formatting = {
+                command = [ "nixpkgs-fmt" ];
+              };
+            };
           };
         };
 
@@ -71,15 +105,29 @@
         };
       };
 
+      languages = {
+        Nix = {
+          language_servers = [ "nil" ];
+          formatter = {
+            external = {
+              command = "nixpkgs-fmt";
+            };
+          };
+        };
+        Python = {
+          language_servers = [ "pylsp" ];
+        };
+      };
+
       vim_mode = false;
       load_direnv = "shell_hook";
       base_keymap = "VSCode";
       theme = {
-          mode = "system";
-          light = "Catppuccin Latte";
-          dark = "Catppuccin Macchiato";
+        mode = "dark";
+        light = "Catppuccin Latte";
+        dark = "Catppuccin Macchiato";
       };
-      show_whitespaces = "all" ;
+      show_whitespaces = "all";
       ui_font_size = 16;
       buffer_font_size = 16;
     };

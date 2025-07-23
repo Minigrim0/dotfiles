@@ -1,37 +1,34 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   home.packages = with pkgs; [
-    firefox
-    chezmoi
-    alacritty
-    wofi
-    neovim
-    htop
-    rustup
-    nerd-fonts.anonymice
-    zed-editor
-    nodejs_24
-    networkmanagerapplet
-    nextcloud-client
-    eww
-    dunst
-    swww
-    hyprlock
+    firefox # Browser
+    alacritty # Terminal
+    wofi # Application Launcher
+    neovim # TUI Editor
+    htop # System monitor
+    nerd-fonts.anonymice # Font
+    networkmanagerapplet # Network Applet
+    nextcloud-client #  Cloud
+    eww # Widget/bar
+    dunst # Notifications
+    swww # Animated wallpaper
     brightnessctl
     playerctl
     zoxide
-    libnotify  # provides notify-send
+    libnotify # provides notify-send
     thunderbird
     mate.caja
-    gimp3
     vlc
     signal-desktop
     slack
     discord
     stacer
     clamav
-    texliveFull
-    godot
+    seahorse # GUI for gnome secrets
+    polkit_gnome # GUI auth agent
+    blueman # GUI bluetooth manager
+    xfce.tumbler
+    ffmpegthumbnailer
   ];
 }

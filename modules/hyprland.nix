@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   home.sessionVariables.NIXOS_OZONE_WL = "1";
@@ -7,7 +7,7 @@
     enable = true;
 
     settings = {
-      monitor= ",preferred,auto,1";
+      monitor = ",preferred,auto,1";
 
       "$terminal" = "alacritty";
       "$fileManager" = "dolphin";
@@ -22,6 +22,9 @@
         "swww-daemon &"
         "dbus-update-activation-environment --systemd WAYLAND_DISPLAY XDG_CURRENT_DESKTOP"
         "hyprctl setcursor Sweet-cursors 24"
+        "${pkgs.udiskie}/bin/udiskie --notify --tray &"
+        "${pkgs.polkit_gnome}/libexec/polkit-gnome-authentication-agent-1 &"
+        "wl-paste --watch ${pkgs.cliphist}/bin/cliphist store &"
       ];
 
       env = [
@@ -97,8 +100,8 @@
       ];
 
       dwindle = {
-          pseudotile = true; # Master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
-          preserve_split = true; # You probably want this
+        pseudotile = true; # Master switch for pseudotiling. Enabling is bound to mainMod + P in the keybinds section below
+        preserve_split = true; # You probably want this
       };
 
       master = {
@@ -106,12 +109,12 @@
       };
 
       misc = {
-          force_default_wallpaper = -1;
-          disable_hyprland_logo = true;
+        force_default_wallpaper = -1;
+        disable_hyprland_logo = true;
       };
 
       input = {
-        kb_layout =  "";
+        kb_layout = "";
         kb_variant = "";
         kb_model = "";
         kb_options = "";
@@ -125,13 +128,13 @@
       };
 
       gestures = {
-          workspace_swipe = true;
+        workspace_swipe = true;
       };
 
       device = {
-          name = "epic-mouse-v1";
-          sensitivity = -0.5;
-          };
+        name = "epic-mouse-v1";
+        sensitivity = -0.5;
+      };
 
       bind = [
         # Basic binds

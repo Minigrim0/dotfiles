@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
   # Home Manager needs a bit of information about you and the paths it should
@@ -21,6 +21,7 @@
 
   imports = [
     ./modules/alacritty.nix
+    ./modules/development.nix
     ./modules/dunst.nix
     ./modules/eww.nix
     ./modules/fonts.nix
@@ -31,8 +32,8 @@
     ./modules/swww.nix
     ./modules/theme.nix
     ./modules/wofi.nix
-    ./.git-config.nix
     ./modules/zeditor.nix
+    ./.git-config.nix
   ];
 
   fonts.fontconfig.enable = true;
