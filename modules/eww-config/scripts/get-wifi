@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 wifi_status=$(nmcli -t -f active,ssid dev wifi | grep '^yes' | cut -d: -f2)
 if [ -n "$wifi_status" ]; then
     echo "$wifi_status"

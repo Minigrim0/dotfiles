@@ -17,42 +17,63 @@ $text-muted: #888888;
     font-size: 11px;
 }
 
-// Main bar container
+// Main bar container - GTK CSS compatible
 .bar-container {
     background-color: $raisin-dark-semi-opaque;
     color: $text-primary;
-    padding: 6px 2px;
-    border-radius: 8px;
+    padding: 2px 8px;
+    border-radius: 0px 6px;
 }
 
-// Launcher button (top)
+// Shared button rules for all buttons
+.launcher-btn,
+.system-btn,
+.brightness-btn,
+.volume-btn,
+.power-btn {
+    background: $raisin-light;
+    color: $text-primary;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 12px;
+
+    &:hover {
+        background: $wenge;
+    }
+}
+
+// Specific button overrides
 .launcher-btn {
     background: $jasper;
-    color: $text-primary;
-    padding: 5px 0px;
-    border-radius: 5px;
-    margin: 0px 0 8px 0;
-    transition: all 0.2s ease;
 
     &:hover {
         background: $cinnabar;
     }
 }
 
-// Workspace buttons - vertical layout
+.power-btn {
+    background: $jasper;
+
+    &:hover {
+        background: $cinnabar;
+    }
+}
+
+// Workspace buttons - horizontal layout using only supported properties
 .workspaces {
     background: transparent;
-    margin-bottom: 20px;
 
     button {
         background: $raisin-light;
         color: $text-secondary;
-        padding: 4px 0px;
-        margin: 2px 0;
+        padding: 4px 8px;
         border-radius: 4px;
         transition: all 0.2s ease;
         font-weight: bold;
         border: 1px solid transparent;
+        min-width: 16px;
+        font-size: 10px;
 
         &:hover {
             background: $wenge;
@@ -77,44 +98,14 @@ $text-muted: #888888;
     }
 }
 
-// Bottom section buttons
-.system-btn,
-.brightness-btn,
-.volume-btn,
-.power-btn {
-    background: $raisin-light;
-    color: $text-primary;
-    padding: 4px 0px;
-    border-radius: 6px;
-    margin: 3px 0;
-    transition: all 0.2s ease;
-    font-size: 24px;
-
-    .button-open {
-        background: $cinnabar;
-    }
-
-    &:hover {
-        background: $wenge;
-    }
-}
-
-.power-btn {
-    background: $jasper;
-
-    &:hover {
-        background: $cinnabar;
-    }
-}
-
-// Menu popups base style
+// Menu popups - using only supported GTK properties
 .system-menu,
 .brightness-menu,
 .volume-menu,
 .power-menu {
     background: $raisin-dark;
     border-radius: 8px;
-    padding: 4px 0px;
+    padding: 2px 12px;
     color: $text-primary;
     border: 2px solid $wenge;
 }
@@ -123,88 +114,84 @@ $text-muted: #888888;
 .system-menu {
     .system-info {
         background: $raisin-light;
-        padding: 2px;
-        margin: 3px 0;
+        padding: 1px 2px;
         border-radius: 4px;
 
         .info-label {
             color: $text-secondary;
-            font-size: 10px;
+            font-size: 11px;
         }
 
         .info-value {
             color: $text-primary;
-            font-size: 10px;
+            font-size: 11px;
             font-weight: bold;
         }
     }
 }
 
-// Datetime
+// Datetime - adjusted for horizontal display
 .datetime {
     background: $wenge;
     color: $text-primary;
-    padding: 8px 2px;
-    border-radius: 6px;
-    margin: 3px 0;
-    min-width: 45px;
+    padding: 2px 8px;
+    border-radius: 4px;
 
     .time-display {
         color: $text-primary;
-        font-size: 16px;
+        font-size: 11px;
         font-weight: bold;
-        margin-bottom: 2px;
     }
 
     .date-display {
         color: $text-secondary;
-        font-size: 14px;
+        font-size: 10px;
     }
 }
 
 // Brightness and Volume menus
 .brightness-menu,
 .volume-menu {
-    font-size: 14px;
+    font-size: 12px;
+    min-width: 100px;
 
     .menu-title {
         color: $jasper;
         font-weight: bold;
-        margin-bottom: 8px;
     }
 
     .value-display {
         color: $text-primary;
-        margin-bottom: 8px;
-        font-size: 12px;
+        font-size: 11px;
     }
 
     .brightness-slider,
     .volume-slider {
-        background: $raisin-light;
+        background: transparent;
         border-radius: 4px;
-        min-height: 100px;
-        padding: 12px 0px;
+        min-width: 100px;
+        padding: 0px;
 
         trough {
             background: $raisin-light;
-            border-radius: 4px;
-            min-height: 8px;
-            min-width: 4px;
+            border-radius: 6px;
+            min-height: 12px;
+            min-width: 100px;
         }
 
         highlight {
-            background: $jasper;
-            border-radius: 4px;
+            background: linear-gradient(90deg, $jasper 0%, $cinnabar 100%);
+            border-radius: 6px;
+            min-height: 12px;
         }
 
         slider {
-            background: $text-primary;
-            border: 1px solid $jasper;
-            border-radius: 50%;
-            min-height: 16px;
-            min-width: 8px;
-            margin: -8px;
+            background: transparent;
+            border: none;
+            min-height: 0px;
+            min-width: 0px;
+            margin: 0px;
+            opacity: 0;
         }
     }
 }
@@ -214,12 +201,12 @@ $text-muted: #888888;
     .power-option {
         background: $raisin-light;
         color: $text-primary;
-        padding: 8px 12px;
-        margin: 3px 0;
+        margin: 0 2px;
+        padding: 2px 2px;
         border-radius: 6px;
-        min-width: 40px;
+        min-width: 35px;
         transition: all 0.2s ease;
-        font-size: 24px;
+        font-size: 20px;
 
         &:hover {
             background: $jasper;

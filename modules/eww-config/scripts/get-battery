@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Using acpi for battery information
 battery_info=$(acpi -b 2>/dev/null | head -1)
 

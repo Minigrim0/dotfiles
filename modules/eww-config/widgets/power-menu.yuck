@@ -7,8 +7,8 @@
 
 ;; Power menu
 (defwidget power-menu []
-  (revealer :reveal power-menu-open :transition "slideup" :duration "300ms"
-    (box :class "power-menu" :orientation "v" :space-evenly false
+  (revealer :reveal power-menu-open :transition "slideright" :duration "300ms"
+    (box :class "power-menu" :orientation "h" :space-evenly false
       (button :onclick "hyprlock & eww update power-menu-open=false"
               :class "power-option"
               "")

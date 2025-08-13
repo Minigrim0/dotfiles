@@ -1,7 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Get filesystem info for both / and /home
 root_info=$(df -h / 2>/dev/null | awk 'NR==2 {printf "/ %s/%s", $3, $2}')
+root_disk=$(df -h / 2>/dev/null | awk 'NR==2 {printf "%s", $1}')
 home_info=$(df -h /home 2>/dev/null | awk 'NR==2 {printf "/home %s/%s", $3, $2}')
+home_disk=$(df -h /home 2>/dev/null | awk 'NR==2 {printf "%s", $1}')
 
 # Check if /home is a separate mount point
 if [ "$home_info" != "" ] && ! mountpoint -q /home; then
@@ -9,7 +11,7 @@ if [ "$home_info" != "" ] && ! mountpoint -q /home; then
     echo "$root_info"
 else
     # /home is separate, show both
-    if [ "$home_info" != "" ]; then
+    if [ "$home_info" != "" ] && [ "$home_disk" != "$root_disk" ]; then
         echo "$root_info | $home_info"
     else
         echo "$root_info"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Using sensors JSON output
 sensor_data=$(sensors -j 2>/dev/null)
 
