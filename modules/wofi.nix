@@ -97,7 +97,7 @@
   # Create wofi-emoji script
   home.file.".local/bin/wofi-emoji" = {
     text = ''
-      #!/bin/bash
+      #!/usr/bin/env bash
       ${pkgs.wofi-emoji}/bin/wofi-emoji
     '';
     executable = true;

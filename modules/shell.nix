@@ -36,6 +36,7 @@
       export EDITOR=nvim
       export BROWSER=firefox
       eval $(zoxide init zsh)
+      eval "$(direnv hook zsh)"
 
       # Create npm global directory if it doesn't exist
       export NPM_CONFIG_PREFIX="$HOME/.npm-global"
@@ -48,7 +49,7 @@
         source "$HOME/.config/background/swww-utils.sh"
       fi
 
-      export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/gcr/ssh
+      export SSH_AUTH_SOCK=$XDG_RUNTIME_DIR/ssh-agent
     '';
   };
 

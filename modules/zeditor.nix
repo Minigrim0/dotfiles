@@ -65,7 +65,7 @@
 
         rust-analyzer = {
           binary = {
-            path_lookup = true;
+            path = "${pkgs.rustup}/bin/rust-analyzer";
           };
         };
 
