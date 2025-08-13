@@ -2,6 +2,8 @@
 
 {
   home.packages = with pkgs; [
+    obsidian
+    vscode
     firefox # Browser
     alacritty # Terminal
     wofi # Application Launcher
@@ -30,5 +32,10 @@
     blueman # GUI bluetooth manager
     xfce.tumbler
     ffmpegthumbnailer
+    spotify
+    blockbench
+    aseprite
+    lmstudio
+    libreoffice-qt6
   ];
 }

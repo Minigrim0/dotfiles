@@ -11,6 +11,13 @@
     nixd # Add nixd
     nixpkgs-fmt # Nix formatter
     nil # Alternative Nix language server
-    texliveFull # TexLive
+
+    # Bevy projects
+    xorg.libXcursor
+    xorg.libXi
+    xorg.libXrandr # To use the x11 feature
+    libxkbcommon
+    wayland # To use the wayland feature
+    imagemagick # For spprite management
   ];
 }

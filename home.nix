@@ -1,22 +1,17 @@
 { pkgs, ... }:
 
 {
-  # Home Manager needs a bit of information about you and the paths it should
-  # manage.
   home.username = "minigrim0";
   home.homeDirectory = "/home/minigrim0";
 
-  # This value determines the Home Manager release that your configuration is
-  # compatible with. This helps avoid breakage when a new Home Manager release
-  # introduces backwards incompatible changes.
-  #
-  # You should not change this value, even if you update Home Manager. If you do
-  # want to update the value, then make sure to first check the Home Manager
-  # release notes.
-
   nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (pkgs.lib.getName pkg) [
+    "obsidian"
     "discord"
     "slack"
+    "spotify"
+    "vscode"
+    "aseprite"
+    "lmstudio"
   ];
 
   imports = [
@@ -27,6 +22,7 @@
     ./modules/fonts.nix
     ./modules/hyprland.nix
     ./modules/hyprlock.nix
+    # ./nvim
     ./modules/packages.nix
     ./modules/shell.nix
     ./modules/swww.nix
@@ -69,11 +65,6 @@
   #
   #  /etc/profiles/per-user/minigrim0/etc/profile.d/hm-session-vars.sh
   #
-  home.sessionVariables = {
-    EDITOR = "nvim";
-  };
-
-
   programs.zsh.enable = true;
 
   home.stateVersion = "25.05"; # Please read the comment before changing.
