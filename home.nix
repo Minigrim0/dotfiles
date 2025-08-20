@@ -10,6 +10,7 @@
     "slack"
     "spotify"
     "vscode"
+    "cursor"
     "aseprite"
     "lmstudio"
   ];
@@ -22,7 +23,7 @@
     ./modules/fonts.nix
     ./modules/hyprland.nix
     ./modules/hyprlock.nix
-    # ./nvim
+    ./nvim
     ./modules/packages.nix
     ./modules/shell.nix
     ./modules/swww.nix

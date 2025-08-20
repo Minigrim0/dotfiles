@@ -3,11 +3,11 @@
 {
   home.packages = with pkgs; [
     obsidian
+    code-cursor
     vscode
     firefox # Browser
     alacritty # Terminal
     wofi # Application Launcher
-    neovim # TUI Editor
     htop # System monitor
     nerd-fonts.anonymice # Font
     networkmanagerapplet # Network Applet

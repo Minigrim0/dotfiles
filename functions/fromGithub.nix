@@ -1,7 +1,7 @@
-{ user, repo, ref ? "HEAD", buildscript ? ":" }:
+{ user, repo, ref ? "main", buildScript ? ":" }:
 
 let
-  pkgs = import <nixpkgs> {};
+  pkgs = import <nixpkgs> { };
 in
 
 pkgs.vimUtils.buildVimPlugin {
@@ -11,5 +11,5 @@ pkgs.vimUtils.buildVimPlugin {
     url = "https://github.com/${user}/${repo}.git";
     inherit ref;
   };
-  inherit buildscript;
+  inherit buildScript;
 }
