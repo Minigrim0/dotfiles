@@ -15,7 +15,6 @@
     # Language servers
     lua-language-server
     # rust-analyzer (provided by rustup in development.nix)
-    nodePackages.typescript-language-server
     pyright
     
     # Formatters
@@ -30,9 +29,6 @@
     
     # Debugging tools  
     lldb # Required for Rust debugging
-    
-    # Git (required by Lazy)
-    git
     
     # Clipboard support
     wl-clipboard

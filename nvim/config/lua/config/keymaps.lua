@@ -12,3 +12,7 @@ vim.keymap.set("n", "<A-l>", "<cmd>bnext<cr>", {desc = "Next Buffer"})
 vim.keymap.set("n", "<A-w>", function()
   require("snacks").bufdelete()
 end, {desc = "Close Buffer"})
+
+vim.keymap.set("n", "<A-t>", "<cmd>ToggleTerm direction=float <cr>", { desc = "Toggle Floating Terminal"})
+vim.keymap.set("t", "<Esc>", [[<C-\><C-N>]])
+

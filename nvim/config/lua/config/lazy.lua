@@ -3,7 +3,7 @@ return {
     lazy = false,
     version = false,
   },
-  install = { colorscheme = { "gruvbox-material" } },
+  install = { colorscheme = { "tokyonight" } },
   checker = { enabled = true },
   performance = {
     rtp = {
