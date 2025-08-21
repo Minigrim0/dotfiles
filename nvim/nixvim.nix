@@ -16,5 +16,9 @@
     viAlias = true;
     vimAlias = true;
     vimdiffAlias = true;
+
+    # Set leader key to space (like LazyVim)
+    globals.mapleader = " ";
+    globals.maplocalleader = "\\";
   };
 }
