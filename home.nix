@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   home.username = "minigrim0";
@@ -31,6 +31,7 @@
     ./modules/theme.nix
     ./modules/wofi.nix
     ./modules/zeditor.nix
+  ] ++ lib.optionals (builtins.pathExists ./.git-config.nix) [
     ./.git-config.nix
   ];
 
