@@ -13,6 +13,6 @@ vim.keymap.set("n", "<A-w>", function()
   require("snacks").bufdelete()
 end, {desc = "Close Buffer"})
 
-vim.keymap.set("n", "<A-t>", "<cmd>ToggleTerm direction=float <cr>", { desc = "Toggle Floating Terminal"})
-vim.keymap.set("t", "<Esc>", [[<C-\><C-N>]])
-
+vim.keymap.set("n", "<A-t>", "<cmd>ToggleTerm direction=float<cr>", { desc = "Toggle Floating Terminal"})
+vim.keynap.set("t", "<Esc>", [[<C-\><C-N>]], { desc = "Unfocus terminal" })
+vim.keymap.set("t", "<A-t>", [[<C-\><C-N><cmd>ToggleTerm direction=float<cr>]], {desc = "Toggle terminal with unfocus when on terminal mode"})
