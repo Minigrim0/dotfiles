@@ -23,7 +23,7 @@
     shellAliases = {
       vim = "nvim";
       grep = "grep --color=auto";
-      hms = "home-manager switch";
+      hms = "home-manager switch --flake ~/.config/home-manager#minigrim0";
       nrs = "sudo nixos-rebuild switch";
     };
 

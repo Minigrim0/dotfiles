@@ -105,6 +105,16 @@
       nixGrammars = true;
     };
 
+    # File explorer
+    neo-tree = {
+      enable = true;
+      closeIfLastWindow = true;
+      window = {
+        width = 30;
+        autoExpandWidth = false;
+      };
+    };
+
     # Dashboard (basic config, enhanced in extraConfigLua)
     dashboard = {
       enable = true;

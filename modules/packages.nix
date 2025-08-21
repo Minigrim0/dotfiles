@@ -40,5 +40,6 @@
     jetbrains.idea-ultimate
     jdk21
     texliveFull
+    qwerty-fr
   ];
 }

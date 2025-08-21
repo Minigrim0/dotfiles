@@ -35,6 +35,14 @@
       options.desc = "Close Buffer";
     }
     
+    # File explorer toggle
+    {
+      mode = "n";
+      key = "<leader>e";
+      action = "<cmd>Neotree toggle<cr>";
+      options.desc = "Toggle File Explorer";
+    }
+    
     # Terminal toggle (from your toggleterm config)
     {
       mode = "n";
