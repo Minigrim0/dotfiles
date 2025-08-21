@@ -39,6 +39,6 @@
     libreoffice-qt6
     jetbrains.idea-ultimate
     jdk21
-    texliveMedium
+    texliveFull
   ];
 }

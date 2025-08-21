@@ -26,8 +26,11 @@ require("lazy").setup({
   spec = {
     -- import LazyVim and its plugins (must be first)
     { "LazyVim/LazyVim", import = "lazyvim.plugins" },
-    -- import LazyVim extras (must come second)
-    { import = "lazyvim.plugins.extras.lang.rust" },
+    -- Disable mason before importing extras
+    { "williamboman/mason.nvim", enabled = false },
+    { "williamboman/mason-lspconfig.nvim", enabled = false },
+    { "jay-babu/mason-nvim-dap.nvim", enabled = false },
+    { "WhoIsSethDaniel/mason-tool-installer.nvim", enabled = false },
     -- import your own plugins (must be last)
     { import = "plugins" },
   },
@@ -58,3 +61,10 @@ require("lazy").setup({
     },
   },
 })
+
+-- Override LazyVim's get_pkg_path function for NixOS
+-- This prevents LazyVim from looking for mason-installed packages
+LazyVim.get_pkg_path = function(pkg, path, opts)
+  -- Return the package from PATH instead of mason
+  return vim.fn.exepath(pkg) ~= "" and pkg or nil
+end

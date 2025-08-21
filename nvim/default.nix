@@ -1,16 +1,12 @@
 { pkgs, lib, ... }:
 
 {
-  # Install neovim and essential tools
-  programs.neovim = {
-    enable = true;
-    defaultEditor = true;
-    viAlias = true;
-    vimAlias = true;
-    vimdiffAlias = true;
-  };
+  # Import the modular NixVim configuration
+  imports = [
+    ./nixvim.nix
+  ];
 
-  # Essential packages for LazyVim to work properly
+  # Essential packages for NixVim to work properly
   home.packages = with pkgs; [
     # Language servers
     lua-language-server
@@ -34,16 +30,8 @@
     wl-clipboard
     xclip
     
-    # Optional: ripgrep, fd for better search
+    # Search tools
     ripgrep
     fd
   ];
-
-  # Symlink LazyVim configuration
-  home.file = {
-    ".config/nvim" = {
-      source = ./config;
-      recursive = true;
-    };
-  };
 }

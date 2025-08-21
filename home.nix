@@ -24,7 +24,7 @@
     ./modules/fonts.nix
     ./modules/hyprland.nix
     ./modules/hyprlock.nix
-    ./nvim
+    ./nvim/nixvim.nix
     ./modules/packages.nix
     ./modules/shell.nix
     ./modules/swww.nix
