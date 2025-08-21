@@ -114,7 +114,7 @@
       };
 
       input = {
-        kb_layout = "";
+        kb_layout = "fr(us)";
         kb_variant = "";
         kb_model = "";
         kb_options = "";
