@@ -13,6 +13,7 @@
     "cursor"
     "aseprite"
     "lmstudio"
+    "idea-ultimate"
   ];
 
   imports = [
