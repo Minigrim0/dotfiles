@@ -105,13 +105,15 @@
       nixGrammars = true;
     };
 
-    # File explorer
-    neo-tree = {
+    # Snacks (LazyVim's utility plugin with file explorer)
+    snacks = {
       enable = true;
-      closeIfLastWindow = true;
-      window = {
-        width = 30;
-        autoExpandWidth = false;
+      settings = {
+        bigfile = { enabled = true; };
+        notifier = { enabled = true; };
+        quickfile = { enabled = true; };
+        statuscolumn = { enabled = true; };
+        words = { enabled = true; };
       };
     };
 

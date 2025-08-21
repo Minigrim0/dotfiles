@@ -27,20 +27,20 @@
       options.desc = "Next Buffer";
     }
     
-    # Buffer deletion
+    # Buffer deletion (snacks)
     {
       mode = "n";
       key = "<A-w>";
-      action = "<cmd>bd<cr>";
-      options.desc = "Close Buffer";
+      action.__raw = "function() Snacks.bufdelete() end";
+      options.desc = "Delete Buffer";
     }
     
-    # File explorer toggle
+    # File explorer toggle (snacks)
     {
       mode = "n";
       key = "<leader>e";
-      action = "<cmd>Neotree toggle<cr>";
-      options.desc = "Toggle File Explorer";
+      action.__raw = "function() Snacks.explorer() end";
+      options.desc = "Explorer (snacks)";
     }
     
     # Terminal toggle (from your toggleterm config)
