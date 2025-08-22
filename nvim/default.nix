@@ -33,5 +33,8 @@
     # Search tools
     ripgrep
     fd
+    
+    # Git tools
+    lazygit
   ];
 }

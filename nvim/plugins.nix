@@ -74,6 +74,25 @@
         "<leader>fh" = "help_tags";
         "<leader>fr" = "oldfiles";
       };
+      settings = {
+        defaults = {
+          vimgrep_arguments = [
+            "rg"
+            "--color=never"
+            "--no-heading"
+            "--with-filename"
+            "--line-number"
+            "--column"
+            "--smart-case"
+          ];
+          file_ignore_patterns = [ "%.git/" "node_modules/" ];
+        };
+        pickers = {
+          find_files = {
+            find_command = [ "fd" "--type" "f" "--strip-cwd-prefix" ];
+          };
+        };
+      };
     };
 
     # Git integration
@@ -92,6 +111,28 @@
     lualine.enable = true;
     bufferline.enable = true;
     which-key.enable = true;
+    web-devicons.enable = true; # Explicitly enable to avoid deprecation warning
+    
+    # Text manipulation
+    vim-surround.enable = true; # vim-surround functionality
+    comment.enable = true; # Smart commenting with gcc/gbc
+    
+    # Additional useful plugins
+    indent-blankline.enable = true; # Show indentation guides
+    nvim-autopairs.enable = true; # Auto close brackets/quotes
+    leap.enable = true; # Fast motion plugin (like easymotion)
+    
+    # Code folding
+    nvim-ufo = {
+      enable = true;
+      settings = {
+        provider_selector = ''
+          function(bufnr, filetype, buftype)
+            return {'treesitter', 'indent'}
+          end
+        '';
+      };
+    };
     
     # Completion
     cmp = {
@@ -132,7 +173,5 @@
   };
 
   # Extra plugins not directly supported by NixVim
-  programs.nixvim.extraPlugins = with pkgs.vimPlugins; [
-    rustaceanvim
-  ];
+  # (rustaceanvim moved to rust.nix)
 }

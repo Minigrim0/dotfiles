@@ -95,6 +95,14 @@
       options.desc = "Go to right window";
     }
 
+    # Window split with Alt-v (vertical split and move current buffer to right)
+    {
+      mode = "n";
+      key = "<A-v>";
+      action = "<cmd>vsplit<cr><C-w>l";
+      options.desc = "Vertical split and move right";
+    }
+
     # Terminal toggle (from your toggleterm config)
     {
       mode = "n";

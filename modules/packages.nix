@@ -41,5 +41,7 @@
     jdk21
     texliveFull
     qwerty-fr
+    taskwarrior3
+    taskwarrior-tui
   ];
 }
