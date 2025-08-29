@@ -43,5 +43,8 @@
     qwerty-fr
     taskwarrior3
     taskwarrior-tui
+    lazygit
+    wl-clipboard
+    xclip
   ];
 }

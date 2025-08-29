@@ -122,5 +122,31 @@
       action = "<cmd>ToggleTerm direction=float<cr>";
       options.desc = "Toggle terminal from terminal mode";
     }
+  
+    # RustaceanVim keys
+    {
+      mode = "n";
+      key = "<leader>ra";
+      action = "<cmd>RustLsp hover actions<cr>";
+      options.desc = "[Rust] hover actions";
+    }
+    {
+      mode = "n";
+      key = "<leader>rd";
+      action = "<cmd>RustLsp relatedDiagnostics<cr>";
+      options.desc = "[Rust] jump to related diagnostic";
+    }
+    {
+      mode = "n";
+      key = "<A-j>";
+      action = "<cmd>RustLsp moveItem down<cr>";
+      options.desc = "[Rust] move item down";
+    }
+    {
+      mode = "n";
+      key = "<A-k>";
+      action = "<cmd>RustLsp moveItem up<cr>";
+      options.desc = "[Rust] move item up";
+    }
   ];
 }

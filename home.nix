@@ -25,6 +25,7 @@
     ./modules/hyprland.nix
     ./modules/hyprlock.nix
     ./nvim/nixvim.nix
+    ./modules/neovim-extras.nix
     ./modules/packages.nix
     ./modules/shell.nix
     ./modules/swww.nix

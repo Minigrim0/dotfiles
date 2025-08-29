@@ -23,8 +23,8 @@
       };
 
       node = {
-        path = lib.getExe pkgs.nodejs;
-        npm_path = lib.getExe' pkgs.nodejs "npm";
+        path = lib.getExe pkgs.nodejs_24;
+        npm_path = lib.getExe' pkgs.nodejs_24 "npm";
       };
 
       hour_format = "hour24";
