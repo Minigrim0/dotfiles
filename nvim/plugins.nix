@@ -152,10 +152,12 @@
       # GitHub Copilot
       copilot-lua = {
         enable = true; # AI code completion
-        suggestion = {
-          enabled = true;
-          auto_trigger = true;
-          debounce = 75;
+        settings = {
+          suggestion = {
+            enabled = true;
+            auto_trigger = true;
+            debounce = 75;
+          };
         };
       };
 
@@ -252,10 +254,18 @@
       };
     };
 
+    # TypeScript tools (enhanced TS support)  
+    # typescript-tools-nvim = {
+    #   enable = true;
+    #   settings = {
+    #     tsserver_file_preferences = {
+    #       includeInlayParameterNameHints = "all";
+    #     };
+    #   };
+    # };
+
     # Extra plugins for React/Electron development
-    extraPlugins = with pkgs.vimPlugins; [
-      # TypeScript tools (enhanced TS support)  
-      typescript-tools-nvim
+    extraPlugins = with pkgs.vimPlugins; [  
       # Package.json management
       package-info-nvim
     ];

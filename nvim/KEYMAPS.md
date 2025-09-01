@@ -10,7 +10,7 @@
 - `<leader>fg` - Live grep (search in files)
 - `<leader>fr` - Recent files
 - `<leader>fb` - Buffers
-- `<leader>e` - Toggle file explorer
+- `<leader>e` - Toggle Snacks file explorer (tree view)
 
 ### Git Integration
 - `<leader>gg` - Open LazyGit
@@ -29,12 +29,14 @@
 - `<A-left>` / `<A-right>` - Previous/Next buffer (arrow keys)
 - `<A-w>` - Delete current buffer
 
-### Code Folding (nvim-ufo)
+### Code Folding (nvim-ufo) - Manual Only
 - `zc` - Close fold under cursor
 - `zo` - Open fold under cursor
 - `za` - Toggle fold under cursor
 - `zM` - Close all folds
 - `zR` - Open all folds
+
+**Note**: Folding is now manual only - files open with all folds expanded by default.
 
 ## Rust-Specific Mappings
 
@@ -82,7 +84,7 @@ When in Cargo.toml files:
 - `*` - Search for word under cursor
 - `:%s/old/new/g` - Replace all occurrences
 
-## LSP Features
+## LSP Features & Error Display
 - `gd` - Go to definition
 - `gr` - Go to references
 - `gi` - Go to implementation
@@ -90,6 +92,14 @@ When in Cargo.toml files:
 - `<leader>ca` - Code actions
 - `<leader>rn` - Rename symbol
 - `]d` / `[d` - Next/previous diagnostic
+- `<leader>d` - Open diagnostic float (changed from `<leader>e`)
+- `<leader>q` - Add diagnostics to location list
+
+**Inline Errors**: Errors and warnings are automatically shown:
+- As virtual text inline with your code
+- In the sign column (left gutter)
+- Underlined in the code
+- Floating window on cursor hold
 
 ## Telescope Advanced
 - `<leader>fh` - Help tags
