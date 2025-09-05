@@ -24,6 +24,7 @@
     ./modules/fonts.nix
     ./modules/hyprland.nix
     ./modules/hyprlock.nix
+    ./modules/kitty.nix
     ./nvim/nixvim.nix
     ./modules/neovim-extras.nix
     ./modules/packages.nix

@@ -7,6 +7,7 @@
     vscode
     firefox # Browser
     alacritty # Terminal
+    kitty
     wofi # Application Launcher
     htop # System monitor
     nerd-fonts.anonymice # Font
