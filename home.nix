@@ -17,7 +17,8 @@
   ];
 
   imports = [
-    ./modules/alacritty.nix
+    ./modules/cli-tools.nix
+    ./modules/creative.nix
     ./modules/development.nix
     ./modules/dunst.nix
     ./modules/eww.nix
@@ -30,6 +31,7 @@
     ./modules/packages.nix
     ./modules/shell.nix
     ./modules/swww.nix
+    ./modules/system-integration.nix
     ./modules/theme.nix
     ./modules/wofi.nix
     ./modules/zeditor.nix

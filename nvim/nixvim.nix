@@ -1,10 +1,6 @@
 { pkgs, lib, ... }:
 
 {
-  home.packages = with pkgs; [
-    ghostscript
-  ];
-
   imports = [
     ./keymaps.nix
     ./options.nix

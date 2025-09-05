@@ -9,8 +9,8 @@
     settings = {
       monitor = ",preferred,auto,1";
 
-      "$terminal" = "alacritty";
-      "$fileManager" = "dolphin";
+      "$terminal" = "kitty";
+      "$fileManager" = "caja";
       "$menu" = "wofi --show drun";
       "$mainMod" = "SUPER";
 

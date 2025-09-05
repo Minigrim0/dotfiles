@@ -6,11 +6,15 @@
     lua-language-server
     pyright
     nodePackages.typescript-language-server
+    python3Packages.python-lsp-server # Python LSP
+    nixd # Nix language server
+    nil # Alternative Nix language server
     
     # Formatters
     stylua
     nodePackages.prettier
     black
+    nixpkgs-fmt # Nix formatter
     
     # Build tools
     gcc
@@ -24,6 +28,8 @@
     ripgrep
     fd
     
-    # Node.js/Electron development (nodejs_24 and npm already in development.nix)
+    # Document processing
+    ghostscript
+    mermaid-cli
   ];
 }

@@ -2,22 +2,30 @@
 
 {
   home.packages = with pkgs; [
+    # Programming languages & runtimes
     rustup # Rust
     nodejs_24 # Node
-    gimp3
-    godot
     python3
-    python3Packages.python-lsp-server
-    nixd # Add nixd
-    nixpkgs-fmt # Nix formatter
-    nil # Alternative Nix language server
-
-    # Bevy projects
-    xorg.libXcursor
-    xorg.libXi
-    xorg.libXrandr # To use the x11 feature
-    libxkbcommon
-    wayland # To use the wayland feature
-    imagemagick # For spprite management
+    jdk21 # Java
+    
+    # IDEs & editors
+    code-cursor
+    vscode
+    jetbrains.idea-ultimate
+    
+    # Creative/design tools
+    gimp3
+    
+    # Game development
+    godot
+    
+    # AI/ML development
+    lmstudio
+    
+    # Document preparation
+    texliveFull # LaTeX
+    
+    # Image processing
+    imagemagick
   ];
 }
