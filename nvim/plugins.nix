@@ -26,7 +26,7 @@
           };
         
           # Python LSP
-          pyright.enable = true;
+          ruff.enable = true;
           
           # Rust LSP (will be handled by rustaceanvim)
           rust_analyzer.enable = false;
@@ -199,6 +199,10 @@
           statuscolumn = { enabled = true; };
           words = { enabled = true; };
           explorer = { enabled = true; };  # Enable file explorer
+          image = { enabled = true; };
+          input = { enabled = true; };
+          picker = { enabled = true; };
+          scroll = { enabled = true; };
           dim = {
             scope = {
               min_size = 5;
@@ -223,8 +227,7 @@
             animate = {
               enabled.__raw = "vim.fn.has(\"nvim-0.10\") == 1";
               style = "out";
-              easing = "linear";
-              duration = {
+              easing = "linear"; duration = {
                 step = 20;
                 total = 500;
               };
