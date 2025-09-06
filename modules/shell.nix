@@ -25,6 +25,11 @@
       grep = "grep --color=auto";
       hms = "home-manager switch --flake ~/.config/home-manager#minigrim0";
       nrs = "sudo nixos-rebuild switch";
+      cat = "bat";
+      ls = "lsd";
+      ll = "lsd -lah";
+      la = "lsd -a";
+      l = "lsd -lh";
     };
 
     history = {

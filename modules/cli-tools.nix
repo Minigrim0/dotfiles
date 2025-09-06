@@ -13,7 +13,9 @@
     # Navigation & file management  
     zoxide
     swayimg
-    
+    bat
+    lsd
+
     # Task management
     taskwarrior3
     taskwarrior-tui
