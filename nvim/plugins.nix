@@ -271,6 +271,15 @@
     extraPlugins = with pkgs.vimPlugins; [  
       # Package.json management
       package-info-nvim
+      (pkgs.vimUtils.buildVimPlugin {
+        name = "pdf-preview";
+        src = pkgs.fetchFromGitHub {
+          owner = "franco-ruggeri";
+          repo = "pdf-preview.nvim";
+          rev = "v0.3.3";
+          hash = "sha256-t8zJL9MYjUTsNdKlGcPrweR6l/hBKZ7We9NGYEmevL8=";
+        };
+       })
     ];
 
     extraConfigLua = ''
