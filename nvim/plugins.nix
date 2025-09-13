@@ -24,7 +24,17 @@
               };
             };
           };
-        
+
+          # Clangd for C/C++
+          clangd = {
+            enable = true;
+            settings = {
+              clangd = {
+                fallbackFlags = [ "-std=c++20" ];
+              };
+            };
+          };
+
           # Python LSP
           ruff.enable = true;
           
@@ -154,9 +164,7 @@
         enable = true; # AI code completion
         settings = {
           suggestion = {
-            enabled = true;
-            auto_trigger = true;
-            debounce = 75;
+            enabled = false;
           };
         };
       };
@@ -177,10 +185,98 @@
         };
       };
       
-      # Completion
+      # Enhanced completion system with nvim-cmp
       cmp = {
         enable = true;
-        autoEnableSources = true;
+        settings = {
+          snippet = {
+            expand = ''
+              function(args)
+                require('luasnip').lsp_expand(args.body)
+              end
+            '';
+          };
+          mapping = {
+            "<Tab>".__raw = "cmp.mapping(cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Insert }), {'i', 's'})";
+            "<S-Tab>".__raw = "cmp.mapping(cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Insert }), {'i', 's'})";
+            "<CR>".__raw = "cmp.mapping.confirm({ select = false })";
+            "<C-Space>".__raw = "cmp.mapping.complete()";
+            "<C-e>".__raw = "cmp.mapping.abort()";
+            "<C-d>".__raw = "cmp.mapping.scroll_docs(4)";
+            "<C-u>".__raw = "cmp.mapping.scroll_docs(-4)";
+          };
+          sources = [
+            { name = "nvim_lsp"; priority = 1000; }
+            { name = "luasnip"; priority = 750; keyword_length = 2; }
+            { name = "copilot"; priority = 700; }
+            { name = "buffer"; priority = 500; keyword_length = 3; }
+            { name = "path"; priority = 300; }
+            { name = "crates"; priority = 400; } # For Rust crates
+          ];
+          window = {
+            completion.__raw = "cmp.config.window.bordered()";
+            documentation.__raw = "cmp.config.window.bordered()";
+          };
+          formatting = {
+            fields = [ "kind" "abbr" "menu" ];
+            format = ''
+              function(entry, vim_item)
+                local kind_icons = {
+                  Text = "󰉿",
+                  Method = "󰆧",
+                  Function = "󰊕",
+                  Constructor = "",
+                  Field = "󰜢",
+                  Variable = "󰀫",
+                  Class = "󰠱",
+                  Interface = "",
+                  Module = "",
+                  Property = "󰜢",
+                  Unit = "󰑭",
+                  Value = "󰎠",
+                  Enum = "",
+                  Keyword = "󰌋",
+                  Snippet = "",
+                  Color = "󰏘",
+                  File = "󰈙",
+                  Reference = "󰈇",
+                  Folder = "󰉋",
+                  EnumMember = "",
+                  Constant = "󰏿",
+                  Struct = "󰙅",
+                  Event = "",
+                  Operator = "󰆕",
+                  TypeParameter = ""
+                }
+                vim_item.kind = string.format('%s %s', kind_icons[vim_item.kind], vim_item.kind)
+                vim_item.menu = ({
+                  nvim_lsp = "[LSP]",
+                  luasnip = "[Snippet]",
+                  copilot = "[Copilot]",
+                  buffer = "[Buffer]",
+                  path = "[Path]",
+                  crates = "[Crates]",
+                })[entry.source.name]
+                return vim_item
+              end
+            '';
+          };
+        };
+      };
+
+      # Completion sources
+      cmp-nvim-lsp.enable = true;
+      cmp_luasnip.enable = true;
+      cmp-buffer.enable = true;
+      cmp-path.enable = true;
+
+      # Snippet engine
+      luasnip = {
+        enable = true;
+        settings = {
+          enable_autosnippets = true;
+          store_selection_keys = "<Tab>";
+        };
       };
 
       # Syntax highlighting
@@ -255,22 +351,24 @@
           };
         };
       };
+
+      typescript-tools = {
+        enable = true;
+        settings = {
+          tsx_close_tag = {
+            enable = true;
+            filetypes = [ "typescriptreact" "javascriptreact" ];
+          };
+        };
+      };
     };
 
-    # TypeScript tools (enhanced TS support)  
-    # typescript-tools-nvim = {
-    #   enable = true;
-    #   settings = {
-    #     tsserver_file_preferences = {
-    #       includeInlayParameterNameHints = "all";
-    #     };
-    #   };
-    # };
-
-    # Extra plugins for React/Electron development
-    extraPlugins = with pkgs.vimPlugins; [  
+    # Extra plugins for React/Electron development and completion
+    extraPlugins = with pkgs.vimPlugins; [
       # Package.json management
       package-info-nvim
+      # VSCode-style snippets
+      friendly-snippets
       (pkgs.vimUtils.buildVimPlugin {
         name = "pdf-preview";
         src = pkgs.fetchFromGitHub {
@@ -352,6 +450,34 @@
           hide_unstable_versions = false,
         })
       end
+
+      -- Configure LuaSnip for enhanced completion
+      local luasnip = require('luasnip')
+
+      -- Load VSCode-style snippets from friendly-snippets
+      require('luasnip.loaders.from_vscode').lazy_load()
+
+      -- Enhanced snippet expansion and jumping
+      luasnip.config.setup({
+        history = true,
+        updateevents = "TextChanged,TextChangedI",
+        enable_autosnippets = true,
+        ext_opts = {
+          [require("luasnip.util.types").choiceNode] = {
+            active = {
+              virt_text = { { "●", "GruvboxOrange" } },
+            },
+          },
+        },
+      })
+
+      -- Set completeopt for better completion experience
+      vim.opt.completeopt = {'menu', 'menuone', 'noselect'}
+
+      -- Auto-pairs integration with nvim-cmp
+      local cmp_autopairs = require('nvim-autopairs.completion.cmp')
+      local cmp = require('cmp')
+      cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
     '';
   };
 }
