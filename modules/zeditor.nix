@@ -129,6 +129,10 @@
         Python = {
           language_servers = [ "pylsp" ];
         };
+        Cpp = {
+          format_on_save = "on";
+          tab_size = 2;
+        };
       };
 
       vim_mode = false;
