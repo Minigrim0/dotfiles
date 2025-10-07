@@ -17,9 +17,9 @@
   ];
 
   imports = [
-    ./modules/cli-tools.nix
-    ./modules/creative.nix
-    ./modules/development.nix
+    ./modules/packages/cli-tools.nix
+    ./modules/packages/creative.nix
+    ./modules/packages/development.nix
     ./modules/dunst.nix
     ./modules/eww.nix
     ./modules/fonts.nix
@@ -28,10 +28,10 @@
     ./modules/kitty.nix
     ./nvim/nixvim.nix
     ./modules/neovim-extras.nix
-    ./modules/packages.nix
+    ./modules/packages/packages.nix
     ./modules/shell.nix
     ./modules/swww.nix
-    ./modules/system-integration.nix
+    ./modules/packages/system-integration.nix
     ./modules/theme.nix
     ./modules/wofi.nix
     ./modules/zeditor.nix

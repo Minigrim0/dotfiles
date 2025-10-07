@@ -127,6 +127,10 @@ $text-muted: #888888;
             font-size: 11px;
             font-weight: bold;
         }
+
+        &.system-info-clickable:hover {
+            background: $wenge;
+        }
     }
 }
 

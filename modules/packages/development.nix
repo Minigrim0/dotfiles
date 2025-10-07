@@ -9,7 +9,6 @@
     jdk21 # Java
     
     # IDEs & editors
-    code-cursor
     vscode
     jetbrains.idea-ultimate
     

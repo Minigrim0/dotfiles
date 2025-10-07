@@ -14,9 +14,11 @@
       (box :class "system-info" :orientation "h"
         (label :class "info-label" :text "󰋊")
         (label :class "info-value" :text "${filesystem}"))
-      (box :class "system-info" :orientation "h"
-        (label :class "info-label" :text "󰖩")
-        (label :class "info-value" :text "${wifi}"))
-      (box :class "system-info" :orientation "h"
-        (label :class "info-label" :text "󰁹")
-        (label :class "info-value" :text "${battery}")))))
+      (eventbox :onclick "kitty -e impala &" :cursor "pointer"
+        (box :class "system-info system-info-clickable" :orientation "h"
+          (label :class "info-label" :text "󰖩")
+          (label :class "info-value" :text "${wifi}")))
+      (eventbox :onclick "kitty -e bluetui &" :cursor "pointer"
+        (box :class "system-info system-info-clickable" :orientation "h"
+          (label :class "info-label" :text "󰁹")
+          (label :class "info-value" :text "${battery}"))))))

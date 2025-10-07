@@ -282,7 +282,7 @@
        })
     ];
 
-    extraConfigLua = ''
+    extraConfigLua = /* lua */ '' 
       -- Enhanced diagnostic configuration
       vim.diagnostic.config({
         virtual_text = {
@@ -352,6 +352,9 @@
           hide_unstable_versions = false,
         })
       end
+
+      -- PDF Preview
+      require('pdf-preview').setup({})
     '';
   };
 }

@@ -57,6 +57,12 @@
       };
 
       lsp = {
+        clangd = {
+          binary = {
+            path = "${pkgs.clang-tools}/bin/clangd";
+          };
+        };
+
         pylsp = {
           binary = {
             path = "${pkgs.python3Packages.python-lsp-server}/bin/pylsp";
@@ -106,6 +112,12 @@
       };
 
       languages = {
+        C = {
+          language_servers = [ "clangd" ];
+        };
+        "C++" = {
+          language_servers = [ "clangd" ];
+        };
         Nix = {
           language_servers = [ "nil" ];
           formatter = {

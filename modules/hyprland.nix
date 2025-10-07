@@ -147,6 +147,13 @@
         "$mainMod, P, pseudo"
         "$mainMod, L, exec, hyprlock"
 
+        # Screenshots
+        "$mainMod SHIFT, F, exec, hyprshot -m region"
+
+        # TUI tools
+        "$mainMod SHIFT, B, exec, $terminal -e bluetui"
+        "$mainMod SHIFT, N, exec, $terminal -e impala"
+
         # Move focus
         "$mainMod, left, movefocus, l"
         "$mainMod, right, movefocus, r"
