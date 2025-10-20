@@ -1,5 +1,5 @@
 ;; Power menu
-(defwidget power-button []
+(defwidget power-menu []
   (eventbox
     :onhover "eww update power-menu-open=1"
     :onhoverlost "eww update power-menu-open=0"
