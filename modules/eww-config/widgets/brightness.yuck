@@ -11,7 +11,7 @@
         :tooltip "Brightness: ${brightness}%"
         "")
       (box :class "brightness-menu" :orientation "h" :space-evenly false
-        (label :text "${brightness}%")
+        (label :text "${brightness}%")
         (scale :class "brightness-slider"
           :value brightness
           :min 1

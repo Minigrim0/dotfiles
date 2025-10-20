@@ -9,10 +9,10 @@
       :samesize false
       (button :class "system-btn ${system-menu-open ? "" : "button-open"}"
         :onclick "eww update system-menu-open=${!system-menu-open} &"
-        "")
+        "")
       (box :class "system-menu" :orientation "h" :space-evenly false
         (box :class "system-info" :orientation "h"
-          (label :class "info-label" :text "")
+          (label :class "info-label" :text "")
           (label :class "info-value" :text "${cpu-temp}°C"))
         (box :class "system-info" :orientation "h"
           (label :class "info-label" :text "󰋊")

@@ -9,9 +9,9 @@
       :samesize false
       (button :class "volume-btn"
         :tooltip "Volume: ${volume}"
-        "")
+        "")
       (box :class "volume-menu" :orientation "h" :space-evenly false
-        (label :text {volume == "Muted" ? "Muted" : "${volume}%"})
+        (label :text {volume == "Muted" ? " Muted" : " ${volume}%"})
         (scale :class "volume-slider"
           :value {volume == "Muted" ? 0 : volume}
           :min 0
