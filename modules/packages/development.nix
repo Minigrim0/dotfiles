@@ -14,7 +14,8 @@
     
     # Creative/design tools
     gimp3
-    
+    freecad
+
     # Game development
     godot
     

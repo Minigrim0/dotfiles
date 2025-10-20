@@ -16,8 +16,10 @@
     spotify
     
     # File management
-    mate.caja
-    
+    nautilus
+
+    jabref
+
     # Office suite
     libreoffice-qt6
   ];
