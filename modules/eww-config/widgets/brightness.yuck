@@ -1,17 +1,22 @@
-(defwidget brightness-button []
-  (button :class "brightness-btn"
-          :onclick "eww update brightness-menu-open=${!brightness-menu-open} &"
-          :tooltip "Brightness: ${brightness}%"
-    ""))
-
+;; Brightness menu 
 (defwidget brightness-menu []
-  (revealer :reveal brightness-menu-open :transition "slideright" :duration "300ms"
-    (box :class "brightness-menu" :orientation "h" :space-evenly false
-	(label :text "${brightness}%")
-	(scale :class "brightness-slider"
-             :value brightness
-             :min 1
-             :max 100
-             :orientation "h"
-             :flipped false
-             :onchange "brightnessctl set {}% &"))))
+  (eventbox
+    :onhover "eww update brightness-menu-open=1"
+    :onhoverlost "eww update brightness-menu-open=0"
+    (stack
+      :selected brightness-menu-open
+      :transition "slideleft"
+      :samesize false
+      (button :class "brightness-btn"
+        :tooltip "Brightness: ${brightness}%"
+        "")
+      (box :class "brightness-menu" :orientation "h" :space-evenly false
+        (label :text "${brightness}%")
+        (scale :class "brightness-slider"
+          :value brightness
+          :min 1
+          :max 100
+          :orientation "h"
+          :flipped false
+          :onchange "brightnessctl set {}% &")))))
+

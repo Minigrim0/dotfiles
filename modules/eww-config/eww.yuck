@@ -1,13 +1,14 @@
 ;; Variables
 (defvar power-menu-open false)
 (defvar system-menu-open false)
-(defvar brightness-menu-open false)
+(defvar brightness-menu-open 0)
 (defvar volume-menu-open false)
 
 ;; Polling variables - with fallbacks
 (defpoll volume :interval "1s" :initial "50" "scripts/get-volume")
 (defpoll brightness :interval "2s" :initial "50" "scripts/get-brightness")
 (defpoll wifi :interval "3s" :initial "WiFi" "scripts/get-wifi")
+(defpoll bluetooth :interval "3s" :initial "BT" "scripts/get-bluetooth")
 (defpoll battery :interval "5s" :initial "Battery" "scripts/get-battery")
 (defpoll cpu-temp :interval "3s" :initial "45" "scripts/get-temp")
 (defpoll filesystem :interval "10s" :initial "/ -" "scripts/get-filesystem")
@@ -63,15 +64,12 @@
     ;; Right section - system controls and datetime
     (box :orientation "h" :space-evenly false :halign "end" :spacing 4
       ;; System menu (conditional display)
-      (system-menu-button)
       (system-menu)
       
       ;; Brightness menu (conditional display) 
-      (brightness-button)
       (brightness-menu)
       
       ;; Volume menu (conditional display)
-      (volume-button)
       (volume-menu)  
       
       ;; System tray
@@ -81,11 +79,8 @@
       (box :class "datetime" :orientation "h" :space-evenly false :spacing 4
         (label :class "time-display" :text "${time}")
         (label :class "date-display" :text "${date}"))
-            
-      ;; Power button - always visible  
-      (power-button)
-      
-      ;; Power menu (conditional display)
+ 
+      ;; Power button
       (power-menu))))
 
 ;; Main window - horizontal top bar

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Get bluetooth connection status
+bt_power=$(bluetoothctl show | grep "Powered: yes")
+
+if [ -z "$bt_power" ]; then
+    echo "Off"
+    exit 0
+fi
+
+# Get connected device name
+connected_device=$(bluetoothctl devices Connected | head -1 | cut -d' ' -f3-)
+
+if [ -n "$connected_device" ]; then
+    echo "$connected_device"
+else
+    echo "Disconnected"
+fi

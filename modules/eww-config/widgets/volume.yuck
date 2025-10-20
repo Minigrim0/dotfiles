@@ -1,17 +1,21 @@
-(defwidget volume-button []
-  (button :class "volume-btn"
-          :onclick "eww update volume-menu-open=${!volume-menu-open} &"
-          :tooltip "Volume: ${volume}"
-    ""))
-
+;; Volume menu
 (defwidget volume-menu []
-  (revealer :reveal volume-menu-open :transition "slideright" :duration "300ms"
-    (box :class "volume-menu" :orientation "h" :space-evenly false
-	(label :text {volume == "Muted" ? "Muted" : "${volume}%"})
-	(scale :class "volume-slider"
-             :value {volume == "Muted" ? 0 : volume}
-             :min 0
-             :max 100
-             :orientation "h"
-             :flipped false
-             :onchange "pactl set-sink-volume 0 $(printf %.0f {})%"))))
+  (eventbox
+    :onhover "eww update volume-menu-open=1"
+    :onhoverlost "eww update volume-menu-open=0"
+    (stack
+      :selected volume-menu-open
+      :transition "slideleft"
+      :samesize false
+      (button :class "volume-btn"
+        :tooltip "Volume: ${volume}"
+        "")
+      (box :class "volume-menu" :orientation "h" :space-evenly false
+        (label :text {volume == "Muted" ? "Muted" : "${volume}%"})
+        (scale :class "volume-slider"
+          :value {volume == "Muted" ? 0 : volume}
+          :min 0
+          :max 100
+          :orientation "h"
+          :flipped false
+          :onchange "pactl set-sink-volume 0 $(printf %.0f {})%")))))

@@ -1,24 +1,34 @@
-;; System menu button
-(defwidget system-menu-button []
-  (button :class "system-btn ${system-menu-open ? "" : "button-open"}"
-          :onclick "eww update system-menu-open=${!system-menu-open} &"
-    ""))
-
-;; System menu content
+;; System menu
 (defwidget system-menu []
-  (revealer :reveal system-menu-open :transition "slideright" :duration "300ms"
-    (box :class "system-menu" :orientation "h" :space-evenly false
-      (box :class "system-info" :orientation "h"
-        (label :class "info-label" :text "")
-        (label :class "info-value" :text "${cpu-temp}°C"))
-      (box :class "system-info" :orientation "h"
-        (label :class "info-label" :text "󰋊")
-        (label :class "info-value" :text "${filesystem}"))
-      (eventbox :onclick "kitty -e impala &" :cursor "pointer"
-        (box :class "system-info system-info-clickable" :orientation "h"
-          (label :class "info-label" :text "󰖩")
-          (label :class "info-value" :text "${wifi}")))
-      (eventbox :onclick "kitty -e bluetui &" :cursor "pointer"
-        (box :class "system-info system-info-clickable" :orientation "h"
-          (label :class "info-label" :text "󰁹")
-          (label :class "info-value" :text "${battery}"))))))
+  (eventbox
+    :onhover "eww update system-menu-open=1"
+    :onhoverlost "eww update system-menu-open=0"
+    (stack
+      :selected system-menu-open
+      :transition "slideleft"
+      :samesize false
+      (button :class "system-btn ${system-menu-open ? "" : "button-open"}"
+        :onclick "eww update system-menu-open=${!system-menu-open} &"
+        "")
+      (box :class "system-menu" :orientation "h" :space-evenly false
+        (box :class "system-info" :orientation "h"
+          (label :class "info-label" :text "")
+          (label :class "info-value" :text "${cpu-temp}°C"))
+        (box :class "system-info" :orientation "h"
+          (label :class "info-label" :text "󰋊")
+          (label :class "info-value" :text "${filesystem}"))
+        (eventbox :onclick "kitty -e impala &" :cursor "pointer"
+          (box :class "system-info system-info-clickable" :orientation "h"
+            (label :class "info-label" :text "󰖩")
+            (label :class "info-value" :text "${wifi}")))
+        (eventbox :onclick "kitty -e bluetui &" :cursor "pointer"
+          (box :class "system-info system-info-clickable" :orientation "h"
+            (label :class "info-label" :text "󰂯")
+            (label :class "info-value" :text "${bluetooth}")))
+        (eventbox
+          :onclick "kitty -e sh -c 'acpi -V; read' &"
+          :cursor "pointer"
+          :visible {battery != "AC"}
+          (box :class "system-info system-info-clickable" :orientation "h"
+            (label :class "info-label" :text "󰁹")
+            (label :class "info-value" :text "${battery}")))))))

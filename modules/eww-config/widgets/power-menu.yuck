@@ -1,23 +1,26 @@
-;; Power button
-(defwidget power-button []
-  (button :class "power-btn"
-          :onclick "eww update power-menu-open=${!power-menu-open} &"
-          :tooltip "Power Menu"
-    ""))
-
 ;; Power menu
-(defwidget power-menu []
-  (revealer :reveal power-menu-open :transition "slideright" :duration "300ms"
-    (box :class "power-menu" :orientation "h" :space-evenly false
-      (button :onclick "hyprlock & eww update power-menu-open=false"
-              :class "power-option"
-              "")
-      (button :onclick "systemctl suspend & eww update power-menu-open=false"
-              :class "power-option"
-              "")
-      (button :onclick "systemctl reboot & eww update power-menu-open=false"
-              :class "power-option"
-              "")
-      (button :onclick "systemctl poweroff"
-              :class "power-option shutdown"
-              ""))))
+(defwidget power-button []
+  (eventbox
+    :onhover "eww update power-menu-open=1"
+    :onhoverlost "eww update power-menu-open=0"
+    (stack
+      :selected power-menu-open
+      :transition "slideleft"
+      :samesize false
+      (button :class "power-btn"
+        :tooltip "Power Menu"
+        "")
+      (box :class "power-menu" :orientation "h" :space-evenly false
+        (button :onclick "hyprlock & eww update power-menu-open=false"
+          :class "power-option"
+          "")
+        (button :onclick "systemctl suspend & eww update power-menu-open=false"
+          :class "power-option"
+          "")
+        (button :onclick "systemctl reboot & eww update power-menu-open=false"
+          :class "power-option"
+          "")
+        (button :onclick "systemctl poweroff"
+          :class "power-option shutdown"
+          "")))))
+
