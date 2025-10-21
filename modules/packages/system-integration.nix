@@ -11,6 +11,9 @@
     seahorse # GUI for gnome secrets
     clamav # Antivirus
 
+    tailscale
+    trayscale
+
     # Bluetooth management
     blueman
     bluetui # TUI bluetooth manager

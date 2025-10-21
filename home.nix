@@ -14,6 +14,7 @@
     "aseprite"
     "lmstudio"
     "idea-ultimate"
+    "tailscale" 
   ];
 
   imports = [
