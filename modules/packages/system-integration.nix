@@ -14,6 +14,10 @@
     tailscale
     trayscale
 
+    rclone
+    rclone-ui
+    protonvpn-gui
+
     # Bluetooth management
     blueman
     bluetui # TUI bluetooth manager

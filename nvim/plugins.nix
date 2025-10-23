@@ -161,7 +161,7 @@
       
       # GitHub Copilot
       copilot-lua = {
-        enable = true; # AI code completion
+        enable = false; # AI code completion
         settings = {
           suggestion = {
             enabled = false;
