@@ -11,7 +11,8 @@
     # IDEs & editors
     vscode
     jetbrains.idea-ultimate
-    
+    android-studio
+
     # Creative/design tools
     gimp3
     freecad

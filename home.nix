@@ -15,6 +15,7 @@
     "lmstudio"
     "idea-ultimate"
     "tailscale" 
+    "android-studio-stable"
   ];
 
   imports = [
