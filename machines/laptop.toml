@@ -1,0 +1,20 @@
+[meta]
+name = "laptop"
+hostname = ""   # fill with: hostnamectl hostname
+
+[packages]
+extra = ["brightnessctl", "acpi"]
+
+[wallpaper]
+# On battery: switch to static wallpaper to save power
+animated_on_ac = true
+static_on_battery = true
+
+[hyprland]
+# Brightness keys use brightnessctl on laptop
+brightness_up   = "brightnessctl -e4 -n2 set 5%+"
+brightness_down = "brightnessctl -e4 -n2 set 5%-"
+
+[waybar]
+# Show battery module on laptop
+extra_modules_right = ["battery"]

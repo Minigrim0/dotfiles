@@ -1,0 +1,166 @@
+[meta]
+version = "1"
+
+# ---------------------------------------------------------------------------
+# Core desktop
+# ---------------------------------------------------------------------------
+
+[modules.hyprland]
+enabled = true
+packages = [
+    "hyprland",
+    "hyprlock",
+    "xdg-desktop-portal-hyprland",
+    "xdg-desktop-portal-gtk",
+    "polkit-kde-agent",
+    "playerctl",
+    "hyprshot",
+    "wl-clipboard",
+    "cliphist",
+]
+
+[modules.bar]
+enabled = true
+configs = "waybar"
+packages = ["waybar"]
+
+[modules.launcher]
+enabled = true
+configs = "wofi"
+packages = ["wofi"]
+
+[modules.notifications]
+enabled = true
+configs = "dunst"
+packages = ["dunst", "libnotify"]
+
+[modules.wallpaper]
+enabled = true
+configs = "matugen"
+packages = ["swww", "matugen", "ffmpeg"]
+aur_packages = ["mpvpaper"]
+
+[modules.terminal]
+enabled = true
+configs = "kitty"
+packages = ["kitty"]
+
+# ---------------------------------------------------------------------------
+# Shell
+# ---------------------------------------------------------------------------
+
+[modules.shell]
+enabled = true
+packages = [
+    "zsh",
+    "zsh-autosuggestions",
+    "zsh-syntax-highlighting",
+    "starship",
+    "zoxide",
+]
+hooks.post_install = ["chsh -s /bin/zsh"]
+
+# ---------------------------------------------------------------------------
+# Fonts & theme
+# ---------------------------------------------------------------------------
+
+[modules.fonts]
+enabled = true
+packages = ["noto-fonts", "noto-fonts-emoji", "ttf-firacode-nerd", "ttf-jetbrains-mono-nerd"]
+aur_packages = []
+
+[modules.theme]
+enabled = true
+packages = ["papirus-icon-theme", "qt6ct", "kvantum", "adwaita-icon-theme"]
+aur_packages = ["bibata-cursor-theme-bin"]
+
+# ---------------------------------------------------------------------------
+# Audio / Bluetooth / Network
+# ---------------------------------------------------------------------------
+
+[modules.audio]
+enabled = true
+packages = ["pipewire", "pipewire-pulse", "wireplumber", "pavucontrol"]
+hooks.post_install = ["systemctl --user enable --now pipewire pipewire-pulse wireplumber"]
+
+[modules.bluetooth]
+enabled = true
+packages = ["bluez", "bluez-utils", "blueman", "bluetui"]
+hooks.post_install = ["sudo systemctl enable --now bluetooth"]
+
+[modules.network]
+enabled = true
+packages = ["networkmanager", "network-manager-applet", "tailscale"]
+hooks.post_install = ["sudo systemctl enable --now NetworkManager"]
+
+# ---------------------------------------------------------------------------
+# Files & clipboard
+# ---------------------------------------------------------------------------
+
+[modules.files]
+enabled = true
+packages = ["udiskie", "gvfs", "caja"]
+
+# ---------------------------------------------------------------------------
+# CLI tools
+# ---------------------------------------------------------------------------
+
+[modules.cli]
+enabled = true
+packages = [
+    "bat",
+    "lsd",
+    "fzf",
+    "ripgrep",
+    "fd",
+    "btop",
+    "htop",
+    "lazygit",
+    "git",
+    "imagemagick",
+]
+
+# ---------------------------------------------------------------------------
+# Development
+# ---------------------------------------------------------------------------
+
+[modules.dev]
+enabled = true
+packages = [
+    "neovim",
+    "gcc",
+    "cmake",
+    "pkg-config",
+    "rustup",
+    "nodejs",
+    "npm",
+    "python",
+    "python-pip",
+]
+aur_packages = ["visual-studio-code-bin"]
+hooks.post_install = ["rustup default stable"]
+
+# ---------------------------------------------------------------------------
+# Applications
+# ---------------------------------------------------------------------------
+
+[modules.apps]
+enabled = true
+packages = [
+    "firefox",
+    "thunderbird",
+    "nextcloud-client",
+    "vlc",
+    "gimp",
+    "signal-desktop",
+]
+aur_packages = ["obsidian", "discord", "spotify", "slack-desktop-wayland"]
+
+# ---------------------------------------------------------------------------
+# Sync
+# ---------------------------------------------------------------------------
+
+[modules.syncthing]
+enabled = true
+packages = ["syncthing"]
+hooks.post_install = ["systemctl --user enable --now syncthing"]

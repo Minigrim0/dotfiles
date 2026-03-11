@@ -1,0 +1,20 @@
+[meta]
+name = "desktop"
+hostname = ""   # fill with: hostnamectl hostname
+
+[packages]
+extra = ["ddcutil"]
+
+[wallpaper]
+# Desktop is always on AC
+animated_on_ac = true
+static_on_battery = false
+
+[hyprland]
+# Brightness keys use ddcutil on desktop (DDC/CI over DisplayPort/HDMI)
+brightness_up   = "ddcutil setvcp 10 + 5"
+brightness_down = "ddcutil setvcp 10 - 5"
+
+[waybar]
+# No battery module on desktop
+extra_modules_right = []
