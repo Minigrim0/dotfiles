@@ -1,0 +1,124 @@
+name: dots
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+# Cancel redundant in-progress runs on the same branch/PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # check — format, lint, test
+  # Runs on every push/PR to main (skipped on release tags via the `if`).
+  # ---------------------------------------------------------------------------
+  check:
+    name: Format / Lint / Test
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+    timeout-minutes: 20
+
+    defaults:
+      run:
+        working-directory: dots
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      # Cache ~/.cargo/registry, ~/.cargo/git, and the project target dir.
+      # The cache key rotates on Cargo.lock changes so stale deps never linger.
+      - name: Cache Cargo registry + build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            dots/target
+          key: ${{ runner.os }}-cargo-check-${{ hashFiles('dots/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-check-
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --check
+
+      - name: Clippy (deny warnings)
+        run: cargo clippy -- -D warnings
+
+      - name: Run tests
+        run: cargo test
+
+  # ---------------------------------------------------------------------------
+  # release — build optimised binary and attach to the GitHub release
+  # Runs only on v* tags.
+  # ---------------------------------------------------------------------------
+  release:
+    name: Build & Release
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    timeout-minutes: 30
+
+    permissions:
+      contents: write   # required by softprops/action-gh-release to upload assets
+
+    defaults:
+      run:
+        working-directory: dots
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install stable Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-gnu
+
+      - name: Cache Cargo registry + build artefacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            dots/target
+          key: ${{ runner.os }}-cargo-release-${{ hashFiles('dots/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-release-
+            ${{ runner.os }}-cargo-
+
+      # Expose the git tag (e.g. "v0.2.1") so the binary can report its own
+      # version at runtime via the DOTS_VERSION env var.
+      - name: Resolve version from tag
+        run: echo "DOTS_VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_ENV"
+
+      - name: Build release binary
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+        env:
+          DOTS_VERSION: ${{ env.DOTS_VERSION }}
+
+      # Rename to a platform-qualified name before upload.
+      - name: Stage binary
+        run: |
+          cp target/x86_64-unknown-linux-gnu/release/dots \
+             /tmp/dots-linux-x86_64
+
+      - name: Create GitHub release and upload binary
+        uses: softprops/action-gh-release@v2
+        with:
+          files: /tmp/dots-linux-x86_64
+          generate_release_notes: true
