@@ -1,0 +1,183 @@
+/* Generated colors imported from matugen output */
+@import "colors.css";
+
+/* ============================================================================
+   Base
+   ============================================================================ */
+
+* {
+    font-family: "AnonymicePro Nerd Font", monospace;
+    font-size: 13px;
+    border: none;
+    border-radius: 0;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+window#waybar {
+    background-color: alpha(@background, 0.88);
+    color: @text;
+}
+
+/* ============================================================================
+   Sections
+   ============================================================================ */
+
+.modules-left,
+.modules-center,
+.modules-right {
+    padding: 0 8px;
+}
+
+/* ============================================================================
+   Common widget styles
+   ============================================================================ */
+
+#workspaces,
+#clock,
+#tray,
+#bluetooth,
+#network,
+#pulseaudio,
+#custom-brightness,
+#custom-power {
+    padding: 2px 8px;
+    margin: 4px 2px;
+    border-radius: 6px;
+    background-color: @surface;
+    color: @text;
+}
+
+/* ============================================================================
+   Workspaces
+   ============================================================================ */
+
+#workspaces {
+    background-color: transparent;
+    padding: 0;
+}
+
+#workspaces button {
+    padding: 2px 8px;
+    margin: 4px 2px;
+    border-radius: 6px;
+    background-color: @surface;
+    color: @on_surface;
+    border: none;
+}
+
+#workspaces button.active {
+    background-color: @accent;
+    color: @on_accent;
+}
+
+#workspaces button:hover {
+    background-color: @surface_variant;
+    color: @text;
+    box-shadow: none;
+}
+
+/* ============================================================================
+   Window title
+   ============================================================================ */
+
+#window {
+    padding: 2px 10px;
+    margin: 4px 2px;
+    border-radius: 6px;
+    background-color: transparent;
+    color: alpha(@text, 0.7);
+    font-style: italic;
+}
+
+/* ============================================================================
+   Clock
+   ============================================================================ */
+
+#clock {
+    background-color: @accent;
+    color: @on_accent;
+    font-weight: bold;
+}
+
+/* ============================================================================
+   Tray
+   ============================================================================ */
+
+#tray {
+    background-color: @surface;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
+    background-color: @error;
+}
+
+/* ============================================================================
+   Status indicators
+   ============================================================================ */
+
+#bluetooth.connected {
+    color: @accent;
+}
+
+#bluetooth.disabled {
+    color: alpha(@text, 0.4);
+}
+
+#network.disconnected {
+    color: @error;
+}
+
+#pulseaudio.muted {
+    color: alpha(@text, 0.4);
+}
+
+/* ============================================================================
+   Battery (laptop only)
+   ============================================================================ */
+
+#battery {
+    padding: 2px 8px;
+    margin: 4px 2px;
+    border-radius: 6px;
+    background-color: @surface;
+    color: @text;
+}
+
+#battery.charging {
+    color: @accent;
+}
+
+#battery.warning:not(.charging) {
+    color: @warning;
+}
+
+#battery.critical:not(.charging) {
+    color: @error;
+    animation: blink 0.5s linear infinite alternate;
+}
+
+@keyframes blink {
+    to { opacity: 0.5; }
+}
+
+/* ============================================================================
+   Power button
+   ============================================================================ */
+
+#custom-power {
+    background-color: transparent;
+    color: alpha(@text, 0.6);
+    padding: 2px 6px;
+    font-size: 15px;
+}
+
+#custom-power:hover {
+    color: @error;
+}
