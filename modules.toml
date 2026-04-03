@@ -38,7 +38,7 @@ packages = ["dunst", "libnotify"]
 enabled = true
 configs = "matugen"
 packages = ["swww", "matugen", "ffmpeg"]
-aur_packages = ["mpvpaper"]
+aur_packages = []
 
 [modules.terminal]
 enabled = true
@@ -118,6 +118,7 @@ packages = [
     "lazygit",
     "git",
     "imagemagick",
+    "screen",
 ]
 
 # ---------------------------------------------------------------------------
@@ -154,7 +155,7 @@ packages = [
     "gimp",
     "signal-desktop",
 ]
-aur_packages = ["obsidian", "discord", "spotify", "slack-desktop-wayland"]
+aur_packages = ["obsidian", "discord", "spotify-launcher", "slack-desktop-wayland"]
 
 # ---------------------------------------------------------------------------
 # Sync

@@ -59,7 +59,7 @@ mkdir -p "$NPM_CONFIG_PREFIX"
 
 export EDITOR=nvim
 export BROWSER=firefox
-export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/ssh-agent"
+export SSH_AUTH_SOCK="${XDG_RUNTIME_DIR}/gcr/ssh"
 
 # ---------------------------------------------------------------------------
 # Aliases
@@ -72,6 +72,60 @@ alias ls='lsd'
 alias ll='lsd -lah'
 alias la='lsd -a'
 alias l='lsd -lh'
+alias ssh="TERM=xterm-256color ssh"
+
+# ---------------------------------------------------------------------------
+# Screen helper: `sc <app>` to attach/create sessions by app name
+# ---------------------------------------------------------------------------
+
+function sc() {
+    # Pass through flags to real screen (e.g. sc -ls, sc -r foo)
+    if [[ $# -eq 0 ]] || [[ "$1" == -* ]]; then
+        command screen "$@"
+        return
+    fi
+
+    local app="$1"
+    shift
+    local extra_args=("$@")
+
+    # Collect session IDs matching the app name (format: PID.name)
+    local sessions=()
+    while IFS= read -r line; do
+        [[ -n "$line" ]] && sessions+=("$line")
+    done < <(command screen -ls 2>/dev/null | grep -E "^\s+[0-9]+\..*${app}" | awk '{print $1}')
+
+    local count=${#sessions[@]}
+
+    if [[ $count -eq 0 ]]; then
+        echo "No screen session for '$app', creating one..."
+        command screen -S "$app" "$app" "${extra_args[@]}"
+    elif [[ $count -eq 1 ]]; then
+        echo "Attaching to '${sessions[1]}'..."
+        command screen -x "${sessions[1]}"
+    else
+        echo "Multiple screen sessions found for '$app':"
+        local full_lines=()
+        while IFS= read -r line; do
+            [[ -n "$line" ]] && full_lines+=("$line")
+        done < <(command screen -ls 2>/dev/null | grep -E "^\s+[0-9]+\..*${app}")
+
+        for i in {1..$count}; do
+            printf "  [%d] %s\n" "$i" "${full_lines[$i]}"
+        done
+        printf "Choose a session [1-%d]: " "$count"
+        read -r choice
+        if [[ "$choice" =~ ^[0-9]+$ ]] && (( choice >= 1 && choice <= count )); then
+            command screen -x "${sessions[$choice]}"
+        else
+            echo "Invalid choice"
+            return 1
+        fi
+    fi
+}
 
 # dots management shortcuts
 alias dots='$HOME/Documents/dotfiles/dots/target/release/dots'
+export PATH="$HOME/.local/bin:$PATH"
+
+export UV_ENV_FILE=.env
