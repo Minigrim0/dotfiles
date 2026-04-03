@@ -5,12 +5,14 @@ mod hooks;
 mod installer;
 mod linker;
 mod syncthing;
+mod theme;
 mod wallpaper;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Command, SyncthingCmd, WallpaperCmd};
+use cli::{Cli, Command, SyncthingCmd, ThemeCmd, WallpaperCmd};
 use config::{dotfiles_dir, load_machine, load_manifest};
+use std::io;
 use std::path::Path;
 use tracing_subscriber::EnvFilter;
 
@@ -29,10 +31,9 @@ async fn main() -> Result<()> {
     // Set RUST_LOG=dots=debug (or info/warn) to enable diagnostic output.
     tracing_subscriber::fmt()
         .with_env_filter(
-            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("error")),
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
         )
         .with_target(false)
-        .without_time()
         .init();
 
     let cli = Cli::parse();
@@ -68,6 +69,27 @@ async fn main() -> Result<()> {
         }
 
         Command::Install(args) => {
+            let machine_name = args.machine.unwrap_or_else(|| {
+                // Ask the user which machine to install
+                arrow!("No machine specified. Type the name of the machine or press Enter to use 'desktop':");
+                let mut input = String::new();
+                loop {
+                    match io::stdin().read_line(&mut input) {
+                        Ok(_) => {
+                            let name = input.trim();
+                            if name.is_empty() {
+                                return "desktop".to_string();
+                            }
+                            return name.to_string();
+                        }
+                        Err(e) => {
+                            err!("Failed to read input: {}", e);
+                            continue;
+                        }
+                    }
+                }
+            });
+
             let manifest = load_manifest(&dotfiles)?;
 
             let modules_to_install: Vec<String> = if args.modules.is_empty() {
@@ -95,16 +117,14 @@ async fn main() -> Result<()> {
                 }
             }
 
-            if let Some(machine_name) = args.machine {
-                let mc = load_machine(&dotfiles, &machine_name)?;
-                if !mc.packages.extra.is_empty() {
-                    head!("Extra packages for '{}'", machine_name);
-                    installer::install_extra(&mc.packages.extra).await?;
-                }
-                head!("Setting up dots service");
-                if let Err(e) = daemon::setup_service(&dotfiles) {
-                    err!("Service setup failed: {}", e);
-                }
+            let mc = load_machine(&dotfiles, &machine_name)?;
+            if !mc.packages.extra.is_empty() {
+                head!("Extra packages for '{}'", machine_name);
+                installer::install_extra(&mc.packages.extra).await?;
+            }
+            head!("Setting up dots service");
+            if let Err(e) = daemon::setup_service(&dotfiles) {
+                err!("Service setup failed: {}", e);
             }
         }
 
@@ -121,6 +141,11 @@ async fn main() -> Result<()> {
             WallpaperCmd::Set { name } => wallpaper::set(&name)?,
             WallpaperCmd::List => wallpaper::list()?,
             WallpaperCmd::Mode { mode } => wallpaper::set_mode(&mode)?,
+        },
+
+        Command::Theme { cmd } => match cmd {
+            ThemeCmd::Dark => theme::set(true)?,
+            ThemeCmd::Light => theme::set(false)?,
         },
 
         Command::Daemon => {
@@ -207,7 +232,7 @@ fn print_status(dotfiles: &Path) -> Result<()> {
     let daemons: &[(&str, &str)] = &[
         ("waybar", "waybar"),
         ("dunst", "dunst"),
-        ("swww-daemon", "swww-daemon"),
+        ("awww-daemon", "awww-daemon"),
         ("nm-applet", "nm-applet"),
         ("udiskie", "udiskie"),
         ("nextcloud", "nextcloud"),

@@ -1,111 +1,25 @@
 use anyhow::{Context, Result};
-use serde::{Deserialize, Serialize};
+use std::fs::copy;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use tracing::info;
+
+mod dir;
+mod helpers;
+mod state;
+
+use dir::wallpaper_dir;
+use helpers::{extract_frame, reload_apps};
+pub use state::{load_state, save_state};
+
+use crate::wallpaper::helpers::to_still_path;
 
 const ANIMATED_FPS: u32 = 10;
 
-// ---------------------------------------------------------------------------
-// Wallpaper directory
-// ---------------------------------------------------------------------------
-
-fn wallpaper_dir() -> PathBuf {
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("/root"))
-        .join(".config/wallpaper")
-}
-
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Serialize, Deserialize, Default, Clone)]
-pub struct WallpaperState {
-    pub current: String,
-    pub mode: String,
-}
-
-fn state_path() -> PathBuf {
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("/root"))
-        .join(".local/share/dots/wallpaper.toml")
-}
-
-pub fn load_state() -> WallpaperState {
-    let path = state_path();
-    if let Ok(content) = std::fs::read_to_string(&path)
-        && let Ok(s) = toml::from_str::<WallpaperState>(&content)
-    {
-        return s;
-    }
-    WallpaperState {
-        current: String::new(),
-        mode: "auto".to_string(),
-    }
-}
-
-pub fn save_state(state: &WallpaperState) -> Result<()> {
-    let path = state_path();
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    let content = format!(
-        "current = {:?}\nmode    = {:?}\n",
-        state.current, state.mode
-    );
-    std::fs::write(&path, content).with_context(|| format!("writing {}", path.display()))
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-fn is_video(path: &Path) -> bool {
-    matches!(
-        path.extension().and_then(|e| e.to_str()),
-        Some("mp4" | "mkv" | "webm" | "avi" | "mov")
-    )
-}
-
-fn reload_apps() {
-    for (prog, args) in &[
-        ("pkill", vec!["-SIGUSR2", "waybar"]),
-        ("hyprctl", vec!["reload"]),
-        ("pkill", vec!["-SIGUSR1", "kitty"]),
-        ("dunstctl", vec!["reload"]),
-    ] {
-        let _ = Command::new(prog).args(args).status();
-    }
-}
-
-/// Extract a single frame from a gif/video for matugen palette generation.
-fn extract_frame(path: &Path) -> Result<PathBuf> {
-    let out = std::env::temp_dir().join("dots-wallpaper-frame.jpg");
-    let status = Command::new("ffmpeg")
-        .args([
-            "-y",
-            "-i",
-            &path.to_string_lossy(),
-            "-vframes",
-            "1",
-            "-q:v",
-            "2",
-            &out.to_string_lossy(),
-        ])
-        .status()
-        .context("running ffmpeg — is it installed?")?;
-    if !status.success() {
-        anyhow::bail!("ffmpeg frame extraction failed");
-    }
-    Ok(out)
-}
-
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
-
 /// Convert/copy a file into ~/.config/wallpaper/<name>.[gif|ext].
+/// For GIFs/Videos, a single frame is extracted and registered as <name>.still.jpg for static
+/// wallpapers
 pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
     let wdir = wallpaper_dir();
     std::fs::create_dir_all(&wdir)?;
@@ -117,7 +31,7 @@ pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
             .to_string()
     });
 
-    let dest = if is_video(path) {
+    let dest = if helpers::is_video(path) {
         let dest = wdir.join(format!("{}.gif", stem));
         println!("  → Converting video to gif at {}fps…", ANIMATED_FPS);
         let status = Command::new("ffmpeg")
@@ -136,12 +50,20 @@ pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
         if !status.success() {
             anyhow::bail!("ffmpeg conversion failed");
         }
+        let still_path = extract_frame(path)?;
+        let still_dst_path = helpers::to_still_path(&dest);
+        copy(still_path, still_dst_path)?;
         dest
     } else {
         let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("jpg");
         let dest = wdir.join(format!("{}.{}", stem, ext));
         std::fs::copy(path, &dest)
             .with_context(|| format!("copying {} to {}", path.display(), dest.display()))?;
+        if helpers::is_gif(&dest) {
+            println!("  → Extracting still frame from gif…");
+            let still_path = extract_frame(&dest)?;
+            copy(still_path, helpers::to_still_path(&dest))?;
+        }
         dest
     };
 
@@ -152,6 +74,7 @@ pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
 /// Apply a registered wallpaper by name. Resolves to any file with that stem.
 pub fn set(name: &str) -> Result<()> {
     let wdir = wallpaper_dir();
+    let mut state = load_state();
 
     // Find any file whose stem matches
     let entry = std::fs::read_dir(&wdir)
@@ -160,30 +83,43 @@ pub fn set(name: &str) -> Result<()> {
         .find(|e| e.path().file_stem().and_then(|s| s.to_str()) == Some(name))
         .ok_or_else(|| anyhow::anyhow!("No wallpaper named '{}' in {}", name, wdir.display()))?;
 
-    let path = entry.path();
+    let path = if helpers::is_animated(&entry.path()) && state.mode == "static" {
+        let still = to_still_path(&entry.path());
+        if still.exists() { still } else { entry.path() }
+    } else {
+        entry.path()
+    };
 
-    // swww handles both static images and animated gifs
-    let status = Command::new("swww")
+    // awww handles both static images and animated gifs
+    let status = Command::new("awww")
         .arg("img")
         .arg(&path)
         .status()
-        .context("running swww")?;
+        .context("running awww")?;
     if !status.success() {
-        anyhow::bail!("swww failed");
+        anyhow::bail!("awww failed");
     }
 
     // matugen: extract a frame if gif, use file directly if static image
-    let is_gif = path.extension().and_then(|e| e.to_str()) == Some("gif");
     let palette_path;
-    let matugen_input: &Path = if is_gif {
+    let matugen_input: &Path = if helpers::is_gif(&path) {
         palette_path = extract_frame(&path)?;
         &palette_path
     } else {
         &path
     };
 
+    let mode_flag = if state.dark_mode { "dark" } else { "light" };
+    info!("Extracting palette from still");
     let matugen_status = Command::new("matugen")
-        .args(["image", &matugen_input.to_string_lossy()])
+        .args([
+            "image",
+            &matugen_input.to_string_lossy(),
+            "-m",
+            mode_flag,
+            "--source-color-index",
+            "0",
+        ])
         .status()
         .context("running matugen")?;
     if !matugen_status.success() {
@@ -192,7 +128,6 @@ pub fn set(name: &str) -> Result<()> {
 
     reload_apps();
 
-    let mut state = load_state();
     state.current = name.to_string();
     save_state(&state)?;
 
@@ -209,6 +144,7 @@ pub fn list() -> Result<()> {
     let mut entries: Vec<_> = std::fs::read_dir(&wdir)?
         .filter_map(|e| e.ok())
         .filter(|e| e.path().is_file())
+        .filter(|e| !e.file_name().to_string_lossy().ends_with(".still.jpg"))
         .collect();
     entries.sort_by_key(|e| e.file_name());
 
@@ -254,6 +190,7 @@ pub fn set_mode(mode: &str) -> Result<()> {
 pub fn apply_for_power(_is_ac: bool) -> Result<()> {
     let state = load_state();
     if !state.current.is_empty() {
+        info!("Changing state to: {}", state.current);
         set(&state.current)?;
     }
     Ok(())

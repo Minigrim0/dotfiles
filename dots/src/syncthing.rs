@@ -1,4 +1,4 @@
-use crate::installer::aur_helper;
+use crate::installer::install_extra;
 use anyhow::{Context, Result};
 use std::process::Command;
 
@@ -15,26 +15,7 @@ pub async fn install() -> Result<()> {
         return Ok(());
     }
 
-    match aur_helper() {
-        Some(helper) => {
-            println!("  → Installing syncthing via {}", helper);
-            let status = Command::new(helper)
-                .args(["-S", "--needed", "--noconfirm", "syncthing"])
-                .status()?;
-            if !status.success() {
-                anyhow::bail!("failed to install syncthing");
-            }
-        }
-        None => {
-            println!("  → Installing syncthing via pacman");
-            let status = Command::new("sudo")
-                .args(["pacman", "-S", "--needed", "--noconfirm", "syncthing"])
-                .status()?;
-            if !status.success() {
-                anyhow::bail!("failed to install syncthing");
-            }
-        }
-    }
+    install_extra(&["syncthing".to_string()]).await?;
     Ok(())
 }
 

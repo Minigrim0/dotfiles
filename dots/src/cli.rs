@@ -22,6 +22,11 @@ pub enum Command {
         #[command(subcommand)]
         cmd: WallpaperCmd,
     },
+    /// Set global dark / light mode
+    Theme {
+        #[command(subcommand)]
+        cmd: ThemeCmd,
+    },
     /// Run background daemon (AC monitor + socket server)
     Daemon,
     /// Syncthing management
@@ -74,6 +79,14 @@ pub enum WallpaperCmd {
         /// auto | animated | static
         mode: String,
     },
+}
+
+#[derive(Subcommand)]
+pub enum ThemeCmd {
+    /// Enable dark mode (gsettings + matugen dark palette)
+    Dark,
+    /// Enable light mode (gsettings + matugen light palette)
+    Light,
 }
 
 #[derive(Subcommand)]
