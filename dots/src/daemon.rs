@@ -1,25 +1,39 @@
 use crate::wallpaper;
 use anyhow::{Context, Result};
 use serde_json::Value;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use std::path::PathBuf;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 use tokio::net::UnixListener;
-use tracing::{error, info, warn};
+use tracing::{debug, error, info, warn};
 
 fn is_on_ac() -> bool {
-    if let Ok(entries) = std::fs::read_dir("/sys/class/power_supply") {
-        for entry in entries.flatten() {
-            let online = entry.path().join("online");
-            if std::fs::read_to_string(&online)
-                .map(|s| s.trim() == "1")
-                .unwrap_or(false)
-            {
-                return true;
+    let dir = "/sys/class/power_supply";
+    match std::fs::read_dir(dir) {
+        Err(e) => {
+            warn!("could not read {}: {} — assuming AC", dir, e);
+            true
+        }
+        Ok(entries) => {
+            for entry in entries.flatten() {
+                let online = entry.path().join("online");
+                match std::fs::read_to_string(&online) {
+                    Ok(val) => {
+                        let is_online = val.trim() == "1";
+                        debug!(
+                            "{}: {}",
+                            online.display(),
+                            if is_online { "online" } else { "offline" }
+                        );
+                        if is_online {
+                            return true;
+                        }
+                    }
+                    Err(e) => debug!("could not read {}: {}", online.display(), e),
+                }
             }
+            false
         }
     }
-    true // default: assume AC if unreadable
 }
 
 pub async fn run() -> Result<()> {
@@ -45,11 +59,14 @@ pub async fn run() -> Result<()> {
     }
 
     let mut interval = tokio::time::interval(tokio::time::Duration::from_secs(10));
+    // consume the first (immediate) tick so the loop doesn't double-apply
+    interval.tick().await;
 
     loop {
         tokio::select! {
             _ = interval.tick() => {
                 let ac = is_on_ac();
+                debug!("power poll: {}", if ac { "AC" } else { "battery" });
                 if ac != last_ac {
                     last_ac = ac;
                     info!("power state changed: {}", if ac { "AC" } else { "battery" });
@@ -80,6 +97,8 @@ async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()> {
     let mut line = String::new();
     reader.read_line(&mut line).await?;
 
+    debug!("socket raw input: {:?}", line.trim());
+
     let v: Value = serde_json::from_str(line.trim())?;
     let cmd = v.get("cmd").and_then(|c: &Value| c.as_str()).unwrap_or("");
     info!("socket command: {}", cmd);
@@ -90,6 +109,7 @@ async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()> {
                 .get("mode")
                 .and_then(|m: &Value| m.as_str())
                 .unwrap_or("auto");
+            info!("setting mode to: {}", mode);
             let mut state = wallpaper::load_state();
             state.mode = mode.to_string();
             wallpaper::save_state(&state)?;
@@ -100,6 +120,7 @@ async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()> {
         }
         "set_wallpaper" => {
             let name = v.get("name").and_then(|m: &Value| m.as_str()).unwrap_or("");
+            info!("setting wallpaper to: {:?}", name);
             if !name.is_empty()
                 && let Err(e) = wallpaper::set(name)
             {
@@ -109,6 +130,7 @@ async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()> {
         }
         "status" => {
             let state = wallpaper::load_state();
+            debug!("status request: current={:?} mode={:?}", state.current, state.mode);
             let resp = format!(
                 "{{\"ok\":true,\"data\":{{\"current\":{:?},\"mode\":{:?}}}}}\n",
                 state.current, state.mode
@@ -122,77 +144,5 @@ async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()> {
                 .await?;
         }
     }
-    Ok(())
-}
-
-// ---------------------------------------------------------------------------
-// Service setup
-// ---------------------------------------------------------------------------
-
-// ExecStart uses %h (systemd home dir expansion) so it works for any user.
-const SERVICE: &str = r#"[Unit]
-Description=dots wallpaper daemon
-After=graphical-session.target
-PartOf=graphical-session.target
-
-[Service]
-ExecStart=%h/.local/bin/dots daemon
-Environment=RUST_LOG=dots=info
-Restart=on-failure
-RestartSec=5
-
-[Install]
-WantedBy=graphical-session.target
-"#;
-
-/// Install binary symlink, write service file, reload + enable the unit.
-pub fn setup_service(dotfiles: &Path) -> Result<()> {
-    let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("/root"));
-
-    // 1. Symlink release binary to ~/.local/bin/dots
-    let bin_dir = home.join(".local/bin");
-    std::fs::create_dir_all(&bin_dir)?;
-    let link = bin_dir.join("dots");
-    let src = dotfiles.join("dots/target/release/dots");
-
-    if !src.exists() {
-        anyhow::bail!(
-            "release binary not found at {}; run `cargo build --release` first",
-            src.display()
-        );
-    }
-
-    if link.exists() || link.is_symlink() {
-        std::fs::remove_file(&link)?;
-    }
-    std::os::unix::fs::symlink(&src, &link)
-        .with_context(|| format!("symlinking {} → {}", src.display(), link.display()))?;
-    println!("  \x1b[36m→\x1b[0m  {} → {}", link.display(), src.display());
-
-    // 2. Write service file
-    let svc_dir = home.join(".config/systemd/user");
-    std::fs::create_dir_all(&svc_dir)?;
-    let svc_path = svc_dir.join("dots.service");
-    std::fs::write(&svc_path, SERVICE)?;
-    println!("  \x1b[36m→\x1b[0m  wrote {}", svc_path.display());
-
-    // 3. daemon-reload
-    Command::new("systemctl")
-        .args(["--user", "daemon-reload"])
-        .status()
-        .context("systemctl daemon-reload")?;
-
-    // 4. enable (don't start — needs graphical session)
-    let status = Command::new("systemctl")
-        .args(["--user", "enable", "dots"])
-        .status()
-        .context("systemctl enable dots")?;
-
-    if status.success() {
-        println!("  \x1b[32m✓\x1b[0m  dots.service enabled");
-    } else {
-        println!("  \x1b[33m~\x1b[0m  systemctl enable returned non-zero");
-    }
-
     Ok(())
 }

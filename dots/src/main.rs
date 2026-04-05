@@ -122,10 +122,6 @@ async fn main() -> Result<()> {
                 head!("Extra packages for '{}'", machine_name);
                 installer::install_extra(&mc.packages.extra).await?;
             }
-            head!("Setting up dots service");
-            if let Err(e) = daemon::setup_service(&dotfiles) {
-                err!("Service setup failed: {}", e);
-            }
         }
 
         Command::Status => {
