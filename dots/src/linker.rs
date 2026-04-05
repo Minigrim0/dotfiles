@@ -1,4 +1,5 @@
 use crate::config::{MachineConfig, Module};
+use crate::{arrow, head, ok, warn};
 use anyhow::{Context, Result};
 use std::path::Path;
 use walkdir::WalkDir;
@@ -48,14 +49,23 @@ fn link(src: &Path, dst: &Path) -> Result<LinkStatus> {
     Ok(LinkStatus::Created)
 }
 
+fn print_link_status(status: LinkStatus, dst: &Path) {
+    match status {
+        LinkStatus::Ok => ok!("{}", dst.display()),
+        LinkStatus::Created => arrow!("Created: {}", dst.display()),
+        LinkStatus::Updated => arrow!("Updated: {}", dst.display()),
+        LinkStatus::BackedUp => arrow!("Backed up and linked: {}", dst.display()),
+    }
+}
+
 pub fn sync_module(name: &str, module: &Module, dotfiles: &Path, home: &Path) -> Result<()> {
     let module_dir = dotfiles.join("configs").join(module.configs_dir(name));
     if !module_dir.exists() {
-        println!("  ~ No configs dir for module '{}'", name);
+        warn!("No configs dir for module '{}'", name);
         return Ok(());
     }
 
-    println!("==> Syncing module: {}", name);
+    head!("Syncing module: {}", name);
 
     for entry in WalkDir::new(&module_dir)
         .min_depth(1)
@@ -68,18 +78,12 @@ pub fn sync_module(name: &str, module: &Module, dotfiles: &Path, home: &Path) ->
             .canonicalize()
             .with_context(|| format!("canonicalizing {}", entry.path().display()))?;
 
-        // Strip the module_dir prefix to get relative path
         let rel = src
             .strip_prefix(module_dir.canonicalize()?)
             .with_context(|| "stripping prefix")?;
         let dst = home.join(rel);
 
-        match link(&src, &dst)? {
-            LinkStatus::Ok => println!("  ✓ {}", dst.display()),
-            LinkStatus::Created => println!("  → Created: {}", dst.display()),
-            LinkStatus::Updated => println!("  → Updated: {}", dst.display()),
-            LinkStatus::BackedUp => println!("  → Backed up and linked: {}", dst.display()),
-        }
+        print_link_status(link(&src, &dst)?, &dst);
     }
 
     Ok(())
@@ -95,37 +99,31 @@ pub fn apply_machine_symlinks(dotfiles: &Path, mc: &MachineConfig, home: &Path) 
     let hypr_dst = home.join(".config/hypr/machine.conf");
 
     if hypr_src.exists() {
-        match link(&hypr_src, &hypr_dst)? {
-            LinkStatus::Ok => println!("  ✓ {}", hypr_dst.display()),
-            LinkStatus::Created => println!("  → Created: {}", hypr_dst.display()),
-            LinkStatus::Updated => println!("  → Updated: {}", hypr_dst.display()),
-            LinkStatus::BackedUp => println!("  → Backed up and linked: {}", hypr_dst.display()),
-        }
+        print_link_status(link(&hypr_src, &hypr_dst)?, &hypr_dst);
     } else {
-        println!(
-            "  ~ machine-{}.conf not found, skipping hyprland machine link",
-            name
-        );
+        warn!("machine-{}.conf not found, skipping hyprland machine link", name);
     }
 
     // ~/.config/waybar/scripts/brightness-backend.sh → configs/waybar/.config/waybar/scripts/brightness-<name>.sh
-    let waybar_src = dotfiles
+    let waybar_brightness_src = dotfiles
         .join("configs/waybar/.config/waybar/scripts")
         .join(format!("brightness-{}.sh", name));
-    let waybar_dst = home.join(".config/waybar/scripts/brightness-backend.sh");
+    let waybar_brightness_dst = home.join(".config/waybar/scripts/brightness-backend.sh");
 
-    if waybar_src.exists() {
-        match link(&waybar_src, &waybar_dst)? {
-            LinkStatus::Ok => println!("  ✓ {}", waybar_dst.display()),
-            LinkStatus::Created => println!("  → Created: {}", waybar_dst.display()),
-            LinkStatus::Updated => println!("  → Updated: {}", waybar_dst.display()),
-            LinkStatus::BackedUp => println!("  → Backed up and linked: {}", waybar_dst.display()),
-        }
+    if waybar_brightness_src.exists() {
+        print_link_status(link(&waybar_brightness_src, &waybar_brightness_dst)?, &waybar_brightness_dst);
     } else {
-        println!(
-            "  ~ brightness-{}.sh not found, skipping waybar brightness link",
-            name
-        );
+        warn!("brightness-{}.sh not found, skipping waybar brightness link", name);
+    }
+
+    // ~/.config/waybar/config.jsonc → configs/waybar/.config/waybar/config-<name>.jsonc (if exists)
+    let waybar_cfg_src = dotfiles
+        .join("configs/waybar/.config/waybar")
+        .join(format!("config-{}.jsonc", name));
+    let waybar_cfg_dst = home.join(".config/waybar/config.jsonc");
+
+    if waybar_cfg_src.exists() {
+        print_link_status(link(&waybar_cfg_src, &waybar_cfg_dst)?, &waybar_cfg_dst);
     }
 
     Ok(())

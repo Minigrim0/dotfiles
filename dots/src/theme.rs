@@ -1,3 +1,4 @@
+use crate::ok;
 use anyhow::{Context, Result};
 use std::process::Command;
 
@@ -28,6 +29,6 @@ pub fn set(dark: bool) -> Result<()> {
         wallpaper::set(&state.current)?;
     }
 
-    println!("  ✓ Theme set to {}", if dark { "dark" } else { "light" });
+    ok!("Theme set to {}", if dark { "dark" } else { "light" });
     Ok(())
 }

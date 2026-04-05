@@ -1,9 +1,10 @@
+use crate::arrow;
 use anyhow::{Context, Result};
 use std::process::Command;
 
 pub fn run(cmds: &[String], label: &str) -> Result<()> {
     for cmd in cmds {
-        println!("  → [{}] {}", label, cmd);
+        arrow!("[{}] {}", label, cmd);
         let status = Command::new("sh")
             .args(["-c", cmd])
             .status()

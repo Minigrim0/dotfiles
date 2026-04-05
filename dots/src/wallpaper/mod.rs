@@ -1,3 +1,4 @@
+use crate::{arrow, ok, warn};
 use anyhow::{Context, Result};
 use std::fs::copy;
 use std::io::Write;
@@ -33,7 +34,7 @@ pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
 
     let dest = if helpers::is_video(path) {
         let dest = wdir.join(format!("{}.gif", stem));
-        println!("  → Converting video to gif at {}fps…", ANIMATED_FPS);
+        arrow!("Converting video to gif at {}fps…", ANIMATED_FPS);
         let status = Command::new("ffmpeg")
             .args([
                 "-y",
@@ -60,14 +61,14 @@ pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
         std::fs::copy(path, &dest)
             .with_context(|| format!("copying {} to {}", path.display(), dest.display()))?;
         if helpers::is_gif(&dest) {
-            println!("  → Extracting still frame from gif…");
+            arrow!("Extracting still frame from gif…");
             let still_path = extract_frame(&dest)?;
             copy(still_path, helpers::to_still_path(&dest))?;
         }
         dest
     };
 
-    println!("  ✓ Registered as '{stem}' → {}", dest.display());
+    ok!("Registered as '{stem}' → {}", dest.display());
     Ok(())
 }
 
@@ -123,7 +124,7 @@ pub fn set(name: &str) -> Result<()> {
         .status()
         .context("running matugen")?;
     if !matugen_status.success() {
-        eprintln!("  ~ matugen exited with error");
+        warn!("matugen exited with error");
     }
 
     reload_apps();
@@ -131,14 +132,14 @@ pub fn set(name: &str) -> Result<()> {
     state.current = name.to_string();
     save_state(&state)?;
 
-    println!("  ✓ Wallpaper set to '{}'", name);
+    ok!("Wallpaper set to '{}'", name);
     Ok(())
 }
 
 pub fn list() -> Result<()> {
     let wdir = wallpaper_dir();
     if !wdir.exists() {
-        println!("  ~ No wallpapers registered yet ({})", wdir.display());
+        warn!("No wallpapers registered yet ({})", wdir.display());
         return Ok(());
     }
     let mut entries: Vec<_> = std::fs::read_dir(&wdir)?
@@ -176,12 +177,12 @@ pub fn set_mode(mode: &str) -> Result<()> {
         stream
             .write_all(msg.as_bytes())
             .context("sending to daemon")?;
-        println!("  → Mode sent to daemon: {}", mode);
+        arrow!("Mode sent to daemon: {}", mode);
     } else {
         let mut state = load_state();
         state.mode = mode.to_string();
         save_state(&state)?;
-        println!("  → Mode saved: {} (daemon not running)", mode);
+        arrow!("Mode saved: {} (daemon not running)", mode);
     }
     Ok(())
 }

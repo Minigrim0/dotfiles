@@ -4,26 +4,17 @@ mod daemon;
 mod hooks;
 mod installer;
 mod linker;
-mod syncthing;
+mod output;
 mod theme;
 mod wallpaper;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Command, SyncthingCmd, ThemeCmd, WallpaperCmd};
+use cli::{Cli, Command, ThemeCmd, WallpaperCmd};
 use config::{dotfiles_dir, load_machine, load_manifest};
 use std::io;
 use std::path::Path;
 use tracing_subscriber::EnvFilter;
-
-// ---------------------------------------------------------------------------
-// User-facing ANSI output helpers (not tracing — these are the UI)
-// ---------------------------------------------------------------------------
-macro_rules! ok   { ($($a:tt)*) => { println!("\x1b[32m✓\x1b[0m  {}", format!($($a)*)) } }
-macro_rules! arrow{ ($($a:tt)*) => { println!("\x1b[36m→\x1b[0m  {}", format!($($a)*)) } }
-macro_rules! warn { ($($a:tt)*) => { println!("\x1b[33m~\x1b[0m  {}", format!($($a)*)) } }
-macro_rules! err  { ($($a:tt)*) => { eprintln!("\x1b[31m✗\x1b[0m  {}", format!($($a)*)) } }
-macro_rules! head { ($($a:tt)*) => { println!("\x1b[1m==>\x1b[0m {}", format!($($a)*)) } }
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -148,12 +139,6 @@ async fn main() -> Result<()> {
             daemon::run().await?;
         }
 
-        Command::Syncthing { cmd } => match cmd {
-            SyncthingCmd::Install => syncthing::install().await?,
-            SyncthingCmd::Start => syncthing::start().await?,
-            SyncthingCmd::Stop => syncthing::stop()?,
-            SyncthingCmd::Status => syncthing::status()?,
-        },
     }
 
     Ok(())
