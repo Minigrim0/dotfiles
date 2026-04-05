@@ -37,7 +37,7 @@ packages = ["dunst", "libnotify"]
 [modules.wallpaper]
 enabled = true
 configs = "matugen"
-packages = ["swww", "matugen", "ffmpeg"]
+packages = ["awww", "matugen", "ffmpeg"]
 aur_packages = []
 
 [modules.terminal]
