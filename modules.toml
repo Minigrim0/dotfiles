@@ -156,12 +156,3 @@ packages = [
     "signal-desktop",
 ]
 aur_packages = ["obsidian", "discord", "spotify-launcher", "slack-desktop-wayland"]
-
-# ---------------------------------------------------------------------------
-# Sync
-# ---------------------------------------------------------------------------
-
-[modules.syncthing]
-enabled = true
-packages = ["syncthing"]
-hooks.post_install = ["systemctl --user enable --now syncthing"]

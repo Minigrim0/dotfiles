@@ -29,11 +29,6 @@ pub enum Command {
     },
     /// Run background daemon (AC monitor + socket server)
     Daemon,
-    /// Syncthing management
-    Syncthing {
-        #[command(subcommand)]
-        cmd: SyncthingCmd,
-    },
 }
 
 #[derive(Args)]
@@ -87,16 +82,4 @@ pub enum ThemeCmd {
     Dark,
     /// Enable light mode (gsettings + matugen light palette)
     Light,
-}
-
-#[derive(Subcommand)]
-pub enum SyncthingCmd {
-    /// Install syncthing via AUR helper
-    Install,
-    /// Start syncthing service
-    Start,
-    /// Stop syncthing service
-    Stop,
-    /// Show syncthing status
-    Status,
 }
