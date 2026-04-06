@@ -1,6 +1,6 @@
+use crate::arrow;
 use crate::config::Module;
-use crate::{arrow};
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 
 /// Use paru's library entrypoint for package operations.
 /// `paru::run` returns an exit code (0 == success).
@@ -9,7 +9,10 @@ pub async fn install_packages(module: &Module) -> Result<()> {
     // Use paru for both official repo and AUR packages. paru understands
     // both and will forward to pacman/libalpm when appropriate.
     if !module.packages.is_empty() {
-        arrow!("Installing pacman packages via paru: {}", module.packages.join(" "));
+        arrow!(
+            "Installing pacman packages via paru: {}",
+            module.packages.join(" ")
+        );
         let mut args = vec!["-S", "--needed", "--noconfirm"];
         args.extend(module.packages.iter().map(|s| s.as_str()));
         let code = paru::run(&args).await;
@@ -19,7 +22,10 @@ pub async fn install_packages(module: &Module) -> Result<()> {
     }
 
     if !module.aur_packages.is_empty() {
-        arrow!("Installing AUR packages via paru: {}", module.aur_packages.join(" "));
+        arrow!(
+            "Installing AUR packages via paru: {}",
+            module.aur_packages.join(" ")
+        );
         let mut args = vec!["-S", "--needed", "--noconfirm"];
         args.extend(module.aur_packages.iter().map(|s| s.as_str()));
         let code = paru::run(&args).await;

@@ -130,7 +130,10 @@ async fn handle_connection(mut stream: tokio::net::UnixStream) -> Result<()> {
         }
         "status" => {
             let state = wallpaper::load_state();
-            debug!("status request: current={:?} mode={:?}", state.current, state.mode);
+            debug!(
+                "status request: current={:?} mode={:?}",
+                state.current, state.mode
+            );
             let resp = format!(
                 "{{\"ok\":true,\"data\":{{\"current\":{:?},\"mode\":{:?}}}}}\n",
                 state.current, state.mode

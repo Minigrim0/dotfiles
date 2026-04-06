@@ -101,7 +101,10 @@ pub fn apply_machine_symlinks(dotfiles: &Path, mc: &MachineConfig, home: &Path) 
     if hypr_src.exists() {
         print_link_status(link(&hypr_src, &hypr_dst)?, &hypr_dst);
     } else {
-        warn!("machine-{}.conf not found, skipping hyprland machine link", name);
+        warn!(
+            "machine-{}.conf not found, skipping hyprland machine link",
+            name
+        );
     }
 
     // ~/.config/waybar/scripts/brightness-backend.sh → configs/waybar/.config/waybar/scripts/brightness-<name>.sh
@@ -111,9 +114,15 @@ pub fn apply_machine_symlinks(dotfiles: &Path, mc: &MachineConfig, home: &Path) 
     let waybar_brightness_dst = home.join(".config/waybar/scripts/brightness-backend.sh");
 
     if waybar_brightness_src.exists() {
-        print_link_status(link(&waybar_brightness_src, &waybar_brightness_dst)?, &waybar_brightness_dst);
+        print_link_status(
+            link(&waybar_brightness_src, &waybar_brightness_dst)?,
+            &waybar_brightness_dst,
+        );
     } else {
-        warn!("brightness-{}.sh not found, skipping waybar brightness link", name);
+        warn!(
+            "brightness-{}.sh not found, skipping waybar brightness link",
+            name
+        );
     }
 
     // ~/.config/waybar/config.jsonc → configs/waybar/.config/waybar/config-<name>.jsonc (if exists)

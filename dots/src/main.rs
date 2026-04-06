@@ -138,7 +138,6 @@ async fn main() -> Result<()> {
         Command::Daemon => {
             daemon::run().await?;
         }
-
     }
 
     Ok(())
