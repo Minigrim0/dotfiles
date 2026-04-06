@@ -1,4 +1,4 @@
-# =============================================================================
+
 # Zsh configuration
 # =============================================================================
 
@@ -127,5 +127,3 @@ function sc() {
 # dots management shortcuts
 alias dots='$HOME/Documents/dotfiles/dots/target/release/dots'
 export PATH="$HOME/.local/bin:$PATH"
-
-export UV_ENV_FILE=.env
