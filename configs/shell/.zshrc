@@ -125,5 +125,4 @@ function sc() {
 }
 
 # dots management shortcuts
-alias dots='$HOME/Documents/dotfiles/dots/target/release/dots'
 export PATH="$HOME/.local/bin:$PATH"

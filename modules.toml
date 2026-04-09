@@ -45,9 +45,7 @@ enabled = true
 configs = "kitty"
 packages = ["kitty"]
 
-# ---------------------------------------------------------------------------
 # Shell
-# ---------------------------------------------------------------------------
 
 [modules.shell]
 enabled = true
@@ -60,9 +58,7 @@ packages = [
 ]
 hooks.post_install = ["chsh -s /bin/zsh"]
 
-# ---------------------------------------------------------------------------
 # Fonts & theme
-# ---------------------------------------------------------------------------
 
 [modules.fonts]
 enabled = true
@@ -74,9 +70,7 @@ enabled = true
 packages = ["papirus-icon-theme", "qt6ct", "kvantum", "adwaita-icon-theme"]
 aur_packages = ["bibata-cursor-theme-bin"]
 
-# ---------------------------------------------------------------------------
 # Audio / Bluetooth / Network
-# ---------------------------------------------------------------------------
 
 [modules.audio]
 enabled = true
@@ -93,17 +87,13 @@ enabled = true
 packages = ["networkmanager", "network-manager-applet", "tailscale"]
 hooks.post_install = ["sudo systemctl enable --now NetworkManager"]
 
-# ---------------------------------------------------------------------------
 # Files & clipboard
-# ---------------------------------------------------------------------------
 
 [modules.files]
 enabled = true
 packages = ["udiskie", "gvfs", "caja"]
 
-# ---------------------------------------------------------------------------
 # CLI tools
-# ---------------------------------------------------------------------------
 
 [modules.cli]
 enabled = true
@@ -121,9 +111,7 @@ packages = [
     "screen",
 ]
 
-# ---------------------------------------------------------------------------
 # Development
-# ---------------------------------------------------------------------------
 
 [modules.dev]
 enabled = true
@@ -141,9 +129,7 @@ packages = [
 aur_packages = ["visual-studio-code-bin"]
 hooks.post_install = ["rustup default stable"]
 
-# ---------------------------------------------------------------------------
 # Applications
-# ---------------------------------------------------------------------------
 
 [modules.apps]
 enabled = true
