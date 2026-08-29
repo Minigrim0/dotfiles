@@ -11,7 +11,8 @@ mod helpers;
 mod state;
 
 use dir::wallpaper_dir;
-use helpers::{extract_frame, reload_apps};
+use helpers::extract_frame;
+pub use helpers::reload_apps;
 pub use state::{load_state, save_state};
 
 use crate::wallpaper::helpers::to_still_path;
@@ -99,33 +100,41 @@ pub fn set(name: &str) -> Result<()> {
         anyhow::bail!("awww failed");
     }
 
-    // matugen: extract a frame if gif, use file directly if static image
-    let palette_path;
-    let matugen_input: &Path = if helpers::is_gif(&path) {
-        palette_path = extract_frame(&path)?;
-        &palette_path
+    if let Some(pinned) = &state.pinned_theme {
+        // Colors are pinned to a preset — leave the palette alone.
+        arrow!(
+            "theme pinned to '{}' — skipping palette regeneration",
+            pinned
+        );
     } else {
-        &path
-    };
+        // matugen: extract a frame if gif, use file directly if static image
+        let palette_path;
+        let matugen_input: &Path = if helpers::is_gif(&path) {
+            palette_path = extract_frame(&path)?;
+            &palette_path
+        } else {
+            &path
+        };
 
-    let mode_flag = if state.dark_mode { "dark" } else { "light" };
-    info!("Extracting palette from still");
-    let matugen_status = Command::new("matugen")
-        .args([
-            "image",
-            &matugen_input.to_string_lossy(),
-            "-m",
-            mode_flag,
-            "--source-color-index",
-            "0",
-        ])
-        .status()
-        .context("running matugen")?;
-    if !matugen_status.success() {
-        warn!("matugen exited with error");
+        let mode_flag = if state.dark_mode { "dark" } else { "light" };
+        info!("Extracting palette from still");
+        let matugen_status = Command::new("matugen")
+            .args([
+                "image",
+                &matugen_input.to_string_lossy(),
+                "-m",
+                mode_flag,
+                "--source-color-index",
+                "0",
+            ])
+            .status()
+            .context("running matugen")?;
+        if !matugen_status.success() {
+            warn!("matugen exited with error");
+        }
+
+        reload_apps();
     }
-
-    reload_apps();
 
     state.current = name.to_string();
     save_state(&state)?;

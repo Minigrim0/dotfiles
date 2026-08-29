@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 use anyhow::{Context, Result};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -91,28 +91,61 @@ pub struct WaybarConfig {
     pub extra_modules_right: Vec<String>,
 }
 
+/// ~/.config/dots/config.toml — written by `dots init` / `dots migrate`.
+#[derive(Debug, Serialize, Deserialize, Default)]
+pub struct DotsConfig {
+    pub dotfiles_dir: String,
+    #[serde(default)]
+    pub machine: Option<String>,
+}
+
+fn config_path() -> PathBuf {
+    dirs::home_dir()
+        .unwrap_or_else(|| PathBuf::from("/root"))
+        .join(".config/dots/config.toml")
+}
+
+pub fn load_config() -> Option<DotsConfig> {
+    let content = std::fs::read_to_string(config_path()).ok()?;
+    toml::from_str(&content).ok()
+}
+
+pub fn save_config(config: &DotsConfig) -> Result<()> {
+    let path = config_path();
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    let content = toml::to_string(config).context("serializing dots config")?;
+    std::fs::write(&path, content).with_context(|| format!("writing {}", path.display()))
+}
+
+/// Canonical repo location used by `init` and `migrate`: ~/.local/share/dots/repo
+pub fn canonical_repo_dir() -> PathBuf {
+    dirs::data_dir()
+        .unwrap_or_else(|| {
+            dirs::home_dir()
+                .unwrap_or_else(|| PathBuf::from("/root"))
+                .join(".local/share")
+        })
+        .join("dots/repo")
+}
+
 /// Resolve the dotfiles root directory.
 /// Order:
 ///   1. $DOTFILES_DIR env var
 ///   2. ~/.config/dots/config.toml → dotfiles_dir key
-///   3. Walk ancestors of cwd looking for modules.toml
-///   4. Fallback: ~/Documents/dotfiles
-pub fn dotfiles_dir() -> PathBuf {
+///   3. Walk ancestors of cwd looking for modules.toml (dev convenience)
+pub fn dotfiles_dir() -> Result<PathBuf> {
     // 1. env var
     if let Ok(dir) = std::env::var("DOTFILES_DIR") {
-        return PathBuf::from(dir);
+        return Ok(PathBuf::from(dir));
     }
 
     // 2. ~/.config/dots/config.toml
-    if let Some(home) = dirs::home_dir() {
-        let cfg = home.join(".config/dots/config.toml");
-        if cfg.exists()
-            && let Ok(content) = std::fs::read_to_string(&cfg)
-            && let Ok(t) = toml::from_str::<toml::Value>(&content)
-            && let Some(dir) = t.get("dotfiles_dir").and_then(|v| v.as_str())
-        {
-            return PathBuf::from(dir);
-        }
+    if let Some(cfg) = load_config()
+        && !cfg.dotfiles_dir.is_empty()
+    {
+        return Ok(PathBuf::from(cfg.dotfiles_dir));
     }
 
     // 3. Walk ancestors of cwd for modules.toml
@@ -120,7 +153,7 @@ pub fn dotfiles_dir() -> PathBuf {
         let mut current = cwd.as_path();
         loop {
             if current.join("modules.toml").exists() {
-                return current.to_path_buf();
+                return Ok(current.to_path_buf());
             }
             match current.parent() {
                 Some(parent) => current = parent,
@@ -129,10 +162,10 @@ pub fn dotfiles_dir() -> PathBuf {
         }
     }
 
-    // 4. Fallback
-    dirs::home_dir()
-        .unwrap_or_else(|| PathBuf::from("/root"))
-        .join("Documents/dotfiles")
+    anyhow::bail!(
+        "no dotfiles repo found — run `dots init <git-url>` (or `dots migrate` from an \
+         existing checkout), or set DOTFILES_DIR"
+    )
 }
 
 pub fn load_manifest(dotfiles: &Path) -> Result<Manifest> {

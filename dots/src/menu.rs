@@ -133,12 +133,22 @@ pub fn wallpaper_menu() -> Result<()> {
 }
 
 fn theme_menu() -> Result<()> {
-    let items = [("󰖔", "Dark"), ("󰖨", "Light"), ("󰔎", "Toggle")];
+    let mut items = vec![
+        ("󰖔", "Dark"),
+        ("󰖨", "Light"),
+        ("󰔎", "Toggle"),
+        ("󰸉", "Auto"),
+    ];
+    for name in theme::preset_names() {
+        items.push(("󰏘", name));
+    }
     match wofi_grid("theme", &items).as_deref() {
         Some("Dark") => theme::set(true),
         Some("Light") => theme::set(false),
         Some("Toggle") => theme::toggle(),
-        _ => Ok(()),
+        Some("Auto") => theme::auto(),
+        Some(preset) => theme::set_preset(preset),
+        None => Ok(()),
     }
 }
 

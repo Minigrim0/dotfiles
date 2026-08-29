@@ -11,6 +11,7 @@ mod linker;
 mod menu;
 mod monitor;
 mod output;
+mod setup;
 mod theme;
 mod wallpaper;
 
@@ -57,11 +58,9 @@ async fn main() -> std::process::ExitCode {
 }
 
 async fn run(cli: Cli) -> Result<()> {
-    let dotfiles = dotfiles_dir();
-    tracing::debug!("dotfiles dir: {}", dotfiles.display());
-
     match cli.command {
         Command::Sync(args) => {
+            let dotfiles = dotfiles_dir()?;
             let manifest = load_manifest(&dotfiles)?;
             let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("no $HOME"))?;
 
@@ -89,6 +88,7 @@ async fn run(cli: Cli) -> Result<()> {
         }
 
         Command::Install(args) => {
+            let dotfiles = dotfiles_dir()?;
             let machine_name = args.machine.unwrap_or_else(|| {
                 // Ask the user which machine to install
                 arrow!("No machine specified. Type the name of the machine or press Enter to use 'desktop':");
@@ -145,10 +145,11 @@ async fn run(cli: Cli) -> Result<()> {
         }
 
         Command::Status => {
-            print_status(&dotfiles)?;
+            print_status(&dotfiles_dir()?)?;
         }
 
         Command::Packages(args) => {
+            let dotfiles = dotfiles_dir()?;
             if args.audit {
                 let manifest = load_manifest(&dotfiles)?;
                 let report = audit::run(&manifest)?;
@@ -172,6 +173,8 @@ async fn run(cli: Cli) -> Result<()> {
             ThemeCmd::Dark => theme::set(true)?,
             ThemeCmd::Light => theme::set(false)?,
             ThemeCmd::Toggle => theme::toggle()?,
+            ThemeCmd::Set { preset } => theme::set_preset(&preset)?,
+            ThemeCmd::Auto => theme::auto()?,
         },
 
         Command::Monitor { cmd } => match cmd {
@@ -196,9 +199,18 @@ async fn run(cli: Cli) -> Result<()> {
         Command::Game => gamemode::toggle()?,
 
         Command::Doctor => {
+            let dotfiles = dotfiles_dir()?;
             let manifest = load_manifest(&dotfiles)?;
             let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("no $HOME"))?;
             doctor::run(&manifest, &dotfiles, &home)?;
+        }
+
+        Command::Init { url, machine } => {
+            setup::init(&url, machine.as_deref())?;
+        }
+
+        Command::Migrate { machine } => {
+            setup::migrate(machine.as_deref())?;
         }
 
         Command::Daemon => {

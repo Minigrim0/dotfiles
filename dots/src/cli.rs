@@ -40,6 +40,20 @@ pub enum Command {
     Game,
     /// Run health checks
     Doctor,
+    /// Clone a dotfiles repo to ~/.local/share/dots/repo and set it up
+    Init {
+        /// Git URL of the dotfiles repository
+        url: String,
+        /// Machine profile (default: match hostname, else prompt)
+        #[arg(long, short)]
+        machine: Option<String>,
+    },
+    /// Move the repo to ~/.local/share/dots/repo and rewrite all symlinks
+    Migrate {
+        /// Machine profile (default: config.toml, hostname match, else prompt)
+        #[arg(long, short)]
+        machine: Option<String>,
+    },
     /// Run background daemon (AC monitor + socket server)
     Daemon,
 }
@@ -105,6 +119,13 @@ pub enum ThemeCmd {
     Light,
     /// Toggle between dark and light
     Toggle,
+    /// Pin a preset palette (tokyo-night, catppuccin, nord, gruvbox)
+    Set {
+        /// Preset name
+        preset: String,
+    },
+    /// Unpin: derive colors from the current wallpaper again
+    Auto,
 }
 
 #[derive(Subcommand)]

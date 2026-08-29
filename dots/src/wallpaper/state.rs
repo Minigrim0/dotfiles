@@ -13,6 +13,9 @@ pub struct WallpaperState {
     pub mode: String,
     #[serde(default = "default_dark_mode")]
     pub dark_mode: bool,
+    /// Name of a pinned theme preset; None = colors follow the wallpaper.
+    #[serde(default)]
+    pub pinned_theme: Option<String>,
 }
 
 fn state_path() -> PathBuf {
@@ -33,6 +36,7 @@ pub fn load_state() -> WallpaperState {
             current: String::new(),
             mode: "auto".to_string(),
             dark_mode: true,
+            pinned_theme: None,
         }
     }
 }
@@ -42,9 +46,6 @@ pub fn save_state(state: &WallpaperState) -> Result<()> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent)?;
     }
-    let content = format!(
-        "current   = {:?}\nmode      = {:?}\ndark_mode = {}\n",
-        state.current, state.mode, state.dark_mode
-    );
+    let content = toml::to_string(state).context("serializing wallpaper state")?;
     std::fs::write(&path, content).with_context(|| format!("writing {}", path.display()))
 }

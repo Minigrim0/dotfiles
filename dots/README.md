@@ -102,14 +102,34 @@ dots packages --check
 dots packages --audit
 ```
 
-### wallpaper
+### init / migrate
 
-Manages wallpapers stored in `~/.local/share/dots/wallpapers/`.
+Set up the repo at its canonical location, `~/.local/share/dots/repo`, and
+record it in `~/.config/dots/config.toml` together with the machine profile
+(matched against `machines/*.toml` hostnames, or prompted).
 
 ```sh
-# Register a new wallpaper (video is converted to GIF at 10 fps)
+# Fresh machine: clone, pick machine, symlink configs
+dots init git@github.com:you/dotfiles.git
+dots init git@github.com:you/dotfiles.git --machine laptop
+
+# Existing checkout: move it to the canonical location and rewrite
+# every $HOME symlink that pointed at the old path
+dots migrate
+```
+
+The repo location is resolved in this order: `$DOTFILES_DIR`, then
+`~/.config/dots/config.toml`, then walking up from the current directory
+looking for `modules.toml` (dev convenience).
+
+### wallpaper
+
+Manages wallpapers stored in `~/.config/wallpaper/`.
+
+```sh
+# Register a new wallpaper (video is converted to GIF, 6 fps by default)
 dots wallpaper register /path/to/image.jpg
-dots wallpaper register /path/to/video.mp4 --name my-animation
+dots wallpaper register /path/to/video.mp4 --name my-animation --fps 8
 
 # Apply a registered wallpaper
 dots wallpaper set my-animation
@@ -133,7 +153,8 @@ register  →  set  →  mode
 ```
 
 1. `register` imports the file (copies images; converts videos to GIF).
-2. `set` tells `swww` to display it and runs `matugen` to regenerate colours.
+2. `set` tells `awww` to display it and runs `matugen` to regenerate colours
+   (skipped while a theme preset is pinned).
 3. `mode` controls whether the daemon will switch between animated/static based
    on AC state (useful on laptops).
 
@@ -146,6 +167,14 @@ the matugen palette from the current wallpaper, and saves the state.
 dots theme dark
 dots theme light
 dots theme toggle
+```
+
+Presets pin the palette to a fixed seed color instead of the wallpaper —
+changing wallpapers keeps the colors until unpinned.
+
+```sh
+dots theme set tokyo-night   # also: catppuccin, nord, gruvbox
+dots theme auto              # unpin: colors follow the wallpaper again
 ```
 
 ### monitor
@@ -216,19 +245,8 @@ subcommands.
 dots daemon
 ```
 
-The `install --machine` command registers `dots daemon` as a `systemd --user`
-service so it starts on login automatically.
-
-### syncthing
-
-Thin wrapper around the `syncthing` systemd user service.
-
-```sh
-dots syncthing install   # install syncthing via AUR helper
-dots syncthing start     # systemctl --user start syncthing
-dots syncthing stop      # systemctl --user stop syncthing
-dots syncthing status    # show service status
-```
+The daemon runs as the `dots.service` systemd user unit (shipped by the
+`daemon` module), started by Hyprland at login.
 
 ---
 
