@@ -19,11 +19,12 @@ use clap::Parser;
 use cli::{Cli, Command, MonitorCmd, ThemeCmd, WallpaperCmd};
 use config::{dotfiles_dir, load_machine, load_manifest};
 use std::io;
+use std::io::IsTerminal;
 use std::path::Path;
 use tracing_subscriber::EnvFilter;
 
 #[tokio::main]
-async fn main() -> Result<()> {
+async fn main() -> std::process::ExitCode {
     // Tracing is silent by default so it doesn't pollute user-facing output.
     // Set RUST_LOG=dots=debug (or info/warn) to enable diagnostic output.
     tracing_subscriber::fmt()
@@ -33,7 +34,29 @@ async fn main() -> Result<()> {
         .with_target(false)
         .init();
 
-    let cli = Cli::parse();
+    match run(Cli::parse()).await {
+        Ok(()) => std::process::ExitCode::SUCCESS,
+        Err(e) => {
+            err!("{:#}", e);
+            // Launched from a keybind or script — surface the failure visibly.
+            if !std::io::stderr().is_terminal() {
+                let _ = std::process::Command::new("notify-send")
+                    .args([
+                        "-a",
+                        "dots",
+                        "-u",
+                        "critical",
+                        "dots failed",
+                        &format!("{:#}", e),
+                    ])
+                    .status();
+            }
+            std::process::ExitCode::FAILURE
+        }
+    }
+}
+
+async fn run(cli: Cli) -> Result<()> {
     let dotfiles = dotfiles_dir();
     tracing::debug!("dotfiles dir: {}", dotfiles.display());
 
