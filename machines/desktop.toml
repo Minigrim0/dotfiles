@@ -1,6 +1,6 @@
 [meta]
 name = "desktop"
-hostname = ""   # fill with: hostnamectl hostname
+hostname = "bush"
 
 [packages]
 extra = ["ddcutil"]
