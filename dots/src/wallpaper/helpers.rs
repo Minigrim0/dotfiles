@@ -29,6 +29,14 @@ pub fn reload_apps() {
     ] {
         let _ = Command::new(prog).args(args).status();
     }
+    // swayosd only reads its stylesheet at startup — restart it
+    let _ = Command::new("pkill")
+        .args(["-x", "swayosd-server"])
+        .status();
+    let _ = Command::new("swayosd-server")
+        .stdout(std::process::Stdio::null())
+        .stderr(std::process::Stdio::null())
+        .spawn();
 }
 
 /// Extract a single frame from a gif/video for matugen palette generation.

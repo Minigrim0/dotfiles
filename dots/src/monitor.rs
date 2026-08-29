@@ -145,19 +145,44 @@ fn targets(displays: &[Display], monitor: Option<&str>, all: bool) -> Vec<Displa
     displays.to_vec()
 }
 
-/// Read a VCP value on a bus. Returns (current, max).
-fn get_vcp(bus: u32, code: &str) -> Result<(u32, u32)> {
-    let out = Command::new("ddcutil")
-        .args(["--bus", &bus.to_string(), "getvcp", code, "--brief"])
+/// Run ddcutil serialized behind a file lock — concurrent i2c transactions
+/// (waybar polling while a brightness key fires) make DDC replies fail.
+fn ddcutil(args: &[&str]) -> Result<std::process::Output> {
+    let lock = dirs::runtime_dir()
+        .unwrap_or_else(std::env::temp_dir)
+        .join("dots-ddc.lock");
+    Command::new("flock")
+        .args(["-w", "3", &lock.to_string_lossy(), "ddcutil"])
+        .args(args)
         .output()
-        .context("running ddcutil getvcp")?;
-    // Format: "VCP 10 C 50 100"
-    let text = String::from_utf8_lossy(&out.stdout);
-    let fields: Vec<&str> = text.split_whitespace().collect();
-    match (fields.get(3), fields.get(4)) {
-        (Some(cur), Some(max)) => Ok((cur.parse()?, max.parse()?)),
-        _ => anyhow::bail!("unexpected getvcp output: {}", text.trim()),
+        .context("running ddcutil (via flock)")
+}
+
+/// Read a VCP value on a bus. Returns (current, max).
+/// DDC replies are flaky on some monitors — retry a few times.
+fn get_vcp(bus: u32, code: &str) -> Result<(u32, u32)> {
+    let bus_s = bus.to_string();
+    let mut last_err = String::new();
+    for attempt in 0..3 {
+        if attempt > 0 {
+            std::thread::sleep(std::time::Duration::from_millis(150));
+        }
+        let out = ddcutil(&["--bus", &bus_s, "getvcp", code, "--brief"])?;
+        // Format: "VCP 10 C 50 100"
+        let text = String::from_utf8_lossy(&out.stdout);
+        let fields: Vec<&str> = text.split_whitespace().collect();
+        if let (Some(cur), Some(max)) = (fields.get(3), fields.get(4))
+            && let (Ok(cur), Ok(max)) = (cur.parse(), max.parse())
+        {
+            return Ok((cur, max));
+        }
+        last_err = format!(
+            "{} {}",
+            text.trim(),
+            String::from_utf8_lossy(&out.stderr).trim()
+        );
     }
+    anyhow::bail!("getvcp on bus {} kept failing: {}", bus, last_err.trim())
 }
 
 fn set_vcp(bus: u32, code: &str, adjust: Adjust) -> Result<()> {
@@ -180,12 +205,15 @@ fn set_vcp(bus: u32, code: &str, adjust: Adjust) -> Result<()> {
             args.push(&val);
         }
     }
-    let status = Command::new("ddcutil")
-        .args(&args)
-        .status()
-        .context("running ddcutil setvcp")?;
-    anyhow::ensure!(status.success(), "ddcutil setvcp failed on bus {}", bus);
-    Ok(())
+    for attempt in 0..2 {
+        if attempt > 0 {
+            std::thread::sleep(std::time::Duration::from_millis(150));
+        }
+        if ddcutil(&args)?.status.success() {
+            return Ok(());
+        }
+    }
+    anyhow::bail!("ddcutil setvcp failed on bus {}", bus)
 }
 
 fn notify(label: &str, pct: u32) {
@@ -271,9 +299,14 @@ fn apply(code: &str, label: &str, value: &str, monitor: Option<&str>, all: bool)
 
     for d in &targets {
         set_vcp(d.bus, code, adjust)?;
-        let (cur, _) = get_vcp(d.bus, code)?;
-        notify(label, cur);
-        ok!("{} {}% on {}", label, cur, d.connector);
+        // Read-back is best-effort: the set already succeeded.
+        match get_vcp(d.bus, code) {
+            Ok((cur, _)) => {
+                notify(label, cur);
+                ok!("{} {}% on {}", label, cur, d.connector);
+            }
+            Err(_) => ok!("{} adjusted on {}", label, d.connector),
+        }
     }
     Ok(())
 }
@@ -287,19 +320,23 @@ pub fn contrast(value: &str, monitor: Option<&str>, all: bool) -> Result<()> {
 }
 
 /// Print focused monitor's brightness as a bare number (waybar-friendly).
+/// Polled on an interval — never fails hard, prints nothing when DDC is
+/// momentarily unreadable so the bar shows a blank instead of an error toast.
 pub fn get() -> Result<()> {
-    let displays = load_cache(false)?;
+    let Ok(displays) = load_cache(false) else {
+        return Ok(());
+    };
     if displays.is_empty() {
         if let Some(pct) = brightnessctl_get() {
             println!("{}", pct);
-            return Ok(());
         }
-        anyhow::bail!("no DDC displays and no backlight");
+        return Ok(());
     }
-    let targets = targets(&displays, None, false);
-    let d = targets.first().context("no monitor matched")?;
-    let (cur, _) = get_vcp(d.bus, VCP_BRIGHTNESS)?;
-    println!("{}", cur);
+    if let Some(d) = targets(&displays, None, false).first()
+        && let Ok((cur, _)) = get_vcp(d.bus, VCP_BRIGHTNESS)
+    {
+        println!("{}", cur);
+    }
     Ok(())
 }
 

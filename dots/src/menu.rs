@@ -39,8 +39,13 @@ pub fn wofi_grid(prompt: &str, items: &[(&str, &str)]) -> Option<String> {
     let lines: Vec<String> = items
         .iter()
         .map(|(icon, label)| {
+            // Pango left-justifies the lines of a multi-line label, so pad the
+            // icon line to sit over the label's midpoint. In a monospace font
+            // a 26pt glyph is 2.6 label-sized (10pt) cells wide.
+            let pad = ((label.chars().count() as f32 - 2.6) / 2.0).round().max(0.0) as usize;
             format!(
-                "<span font=\"26\">{}</span>&#10;<span font=\"10\">{}</span>",
+                "<span font=\"10\">{}</span><span font=\"26\">{}</span>&#10;<span font=\"10\">{}</span>",
+                " ".repeat(pad),
                 pango_escape(icon),
                 pango_escape(label)
             )
