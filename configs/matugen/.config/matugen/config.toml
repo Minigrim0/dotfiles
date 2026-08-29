@@ -29,6 +29,10 @@ output_path = "~/.config/gtk-4.0/colors.css"
 input_path  = "~/.config/matugen/templates/wofi.css"
 output_path = "~/.config/wofi/style.css"
 
+[templates.wofi-menu]
+input_path  = "~/.config/matugen/templates/wofi-menu.css"
+output_path = "~/.config/wofi/menu.css"
+
 [templates.wlogout]
 input_path  = "~/.config/matugen/templates/wlogout.css"
 output_path = "~/.config/wlogout/style.css"

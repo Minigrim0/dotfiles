@@ -1,0 +1,13 @@
+mode=dmenu
+location=center
+width=560
+height=340
+columns=4
+hide_search=true
+allow_markup=true
+insensitive=true
+no_actions=true
+halign=fill
+content_halign=center
+orientation=vertical
+gtk_dark=true
