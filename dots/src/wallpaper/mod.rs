@@ -16,12 +16,10 @@ pub use state::{load_state, save_state};
 
 use crate::wallpaper::helpers::to_still_path;
 
-const ANIMATED_FPS: u32 = 10;
-
 /// Convert/copy a file into ~/.config/wallpaper/<name>.[gif|ext].
 /// For GIFs/Videos, a single frame is extracted and registered as <name>.still.jpg for static
 /// wallpapers
-pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
+pub fn register(path: &Path, name: Option<&str>, fps: u32) -> Result<()> {
     let wdir = wallpaper_dir();
     std::fs::create_dir_all(&wdir)?;
 
@@ -34,14 +32,14 @@ pub fn register(path: &Path, name: Option<&str>) -> Result<()> {
 
     let dest = if helpers::is_video(path) {
         let dest = wdir.join(format!("{}.gif", stem));
-        arrow!("Converting video to gif at {}fps…", ANIMATED_FPS);
+        arrow!("Converting video to gif at {}fps…", fps);
         let status = Command::new("ffmpeg")
             .args([
                 "-y",
                 "-i",
                 &path.to_string_lossy(),
                 "-vf",
-                &format!("fps={},scale=trunc(iw/2)*2:trunc(ih/2)*2", ANIMATED_FPS),
+                &format!("fps={},scale=trunc(iw/2)*2:trunc(ih/2)*2", fps),
                 "-loop",
                 "0",
                 &dest.to_string_lossy(),

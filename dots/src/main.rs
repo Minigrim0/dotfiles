@@ -159,7 +159,9 @@ async fn run(cli: Cli) -> Result<()> {
         }
 
         Command::Wallpaper { cmd } => match cmd {
-            WallpaperCmd::Register { path, name } => wallpaper::register(&path, name.as_deref())?,
+            WallpaperCmd::Register { path, name, fps } => {
+                wallpaper::register(&path, name.as_deref(), fps)?
+            }
             WallpaperCmd::Set { name } => wallpaper::set(&name)?,
             WallpaperCmd::List => wallpaper::list()?,
             WallpaperCmd::Menu => menu::wallpaper_menu()?,

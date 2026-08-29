@@ -74,12 +74,15 @@ pub struct PackagesArgs {
 
 #[derive(Subcommand)]
 pub enum WallpaperCmd {
-    /// Register a wallpaper (video → gif at 10fps, image → copy)
+    /// Register a wallpaper (video → gif, image → copy)
     Register {
         path: std::path::PathBuf,
         /// Override the stored name (default: filename stem)
         #[arg(long, short)]
         name: Option<String>,
+        /// Frames per second for video → gif conversion
+        #[arg(long, default_value_t = 6)]
+        fps: u32,
     },
     /// Apply a registered wallpaper by name
     Set { name: String },
