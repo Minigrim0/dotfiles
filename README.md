@@ -16,13 +16,24 @@ Rust CLI that symlinks configs, installs packages, and runs the desktop glue
 
 ## Install
 
-```sh
-git clone <repo-url> && cd dotfiles
-cargo install --path dots        # installs to ~/.cargo/bin (in Hyprland's PATH)
+On a fresh machine:
 
-dots install --machine desktop   # packages + hooks + machine extras
-dots sync    --machine desktop   # symlink configs into $HOME
+```sh
+cargo install --git https://github.com/Minigrim0/dotfiles dots
+# or, once published: paru -S dots-bin   (PKGBUILDs in packaging/)
+
+dots init git@github.com:Minigrim0/dotfiles.git   # clone to ~/.local/share/dots/repo,
+                                                  # pick machine, symlink configs
+dots install --machine <name>                     # packages + hooks + machine extras
 ```
+
+An existing checkout is adopted with `dots migrate` — it moves the repo to
+`~/.local/share/dots/repo` and rewrites every symlink. The repo location is
+resolved from `$DOTFILES_DIR`, then `~/.config/dots/config.toml`, then by
+walking up from the current directory (dev convenience).
+
+The wallpaper daemon runs as a systemd user service (`dots.service`, in the
+`daemon` module), started by Hyprland at login.
 
 ## Theming
 
