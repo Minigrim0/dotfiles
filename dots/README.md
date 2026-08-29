@@ -96,6 +96,11 @@ dots packages
 
 # Check which required packages are not yet installed
 dots packages --check
+
+# Full audit: reconcile modules.toml against pacman reality.
+# Reports MISSING (in manifest, not installed), UNMANAGED (explicitly
+# installed but untracked), ORPHANS and untracked FOREIGN/AUR packages.
+dots packages --audit
 ```
 
 ### wallpaper
@@ -113,6 +118,9 @@ dots wallpaper set my-animation
 # List all registered wallpapers
 dots wallpaper list
 
+# Pick one from a wofi menu
+dots wallpaper menu
+
 # Change the active mode
 dots wallpaper mode auto      # pick animated when on AC, static on battery
 dots wallpaper mode animated  # always animated
@@ -129,6 +137,75 @@ register  →  set  →  mode
 2. `set` tells `swww` to display it and runs `matugen` to regenerate colours.
 3. `mode` controls whether the daemon will switch between animated/static based
    on AC state (useful on laptops).
+
+### theme
+
+Set or toggle the global dark / light mode. Applies gsettings, regenerates
+the matugen palette from the current wallpaper, and saves the state.
+
+```sh
+dots theme dark
+dots theme light
+dots theme toggle
+```
+
+### monitor
+
+Monitor control — DDC/CI via `ddcutil` on desktops, falling back to
+`brightnessctl` when no DDC display is present (laptops). The i2c bus map is
+cached at `~/.local/state/dots/monitors.json` so adjustments skip the slow
+`ddcutil detect` (~500 ms → ~20 ms). By default commands target the monitor
+that currently has focus (via `hyprctl monitors -j`).
+
+```sh
+dots monitor list             # table of displays + brightness (--refresh to re-detect)
+dots monitor brightness +5    # focused monitor, relative
+dots monitor brightness 60    # focused monitor, absolute
+dots monitor brightness 80 --all
+dots monitor contrast 70 --monitor DP-2
+dots monitor get              # bare brightness number, for waybar
+```
+
+Every change sends a dunst progress notification (stacked, replaceable).
+
+### menu
+
+Settings hub rendered with wofi: wallpaper picker, theme switcher, brightness
+presets, idle toggle, night light (hyprsunset), game mode, keybind cheatsheet,
+and power menu (wlogout).
+
+```sh
+dots menu
+```
+
+### keys
+
+Parse the keybinds from `~/.config/hypr/hyprland.conf` (+ `machine.conf`) and
+show a searchable cheatsheet in wofi. Comments directly above a bind become
+its description — the config is the documentation.
+
+```sh
+dots keys
+```
+
+### game
+
+Toggle game mode: switches off animations, blur, shadows and inactive-dim via
+`hyprctl --batch`; toggling back restores everything with `hyprctl reload`.
+
+```sh
+dots game
+```
+
+### doctor
+
+Health checks: broken or foreign symlinks, daemon processes, failed systemd
+user units, amdgpu error floods in the journal, journal disk usage, and
+missing/orphaned packages.
+
+```sh
+dots doctor
+```
 
 ### daemon
 

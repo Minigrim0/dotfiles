@@ -4,6 +4,12 @@ use std::process::Command;
 
 use crate::wallpaper::{self, load_state, save_state};
 
+/// Flip between dark and light based on the saved state.
+pub fn toggle() -> Result<()> {
+    let state = load_state();
+    set(!state.dark_mode)
+}
+
 pub fn set(dark: bool) -> Result<()> {
     let scheme = if dark { "prefer-dark" } else { "default" };
     let gtk_theme = if dark { "Adwaita-dark" } else { "Adwaita" };

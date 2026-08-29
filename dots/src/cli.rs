@@ -15,7 +15,7 @@ pub enum Command {
     Install(InstallArgs),
     /// Show module status
     Status,
-    /// List or check packages
+    /// List, check or audit packages
     Packages(PackagesArgs),
     /// Wallpaper management
     Wallpaper {
@@ -27,6 +27,19 @@ pub enum Command {
         #[command(subcommand)]
         cmd: ThemeCmd,
     },
+    /// Monitor control (DDC/CI via ddcutil, brightnessctl fallback)
+    Monitor {
+        #[command(subcommand)]
+        cmd: MonitorCmd,
+    },
+    /// Settings hub (wofi menu)
+    Menu,
+    /// Keybind cheatsheet overlay (wofi)
+    Keys,
+    /// Toggle game mode (animations / blur / shadows off)
+    Game,
+    /// Run health checks
+    Doctor,
     /// Run background daemon (AC monitor + socket server)
     Daemon,
 }
@@ -54,6 +67,9 @@ pub struct PackagesArgs {
     /// Check installed vs required
     #[arg(long, short)]
     pub check: bool,
+    /// Audit: reconcile modules.toml against pacman reality
+    #[arg(long, short)]
+    pub audit: bool,
 }
 
 #[derive(Subcommand)]
@@ -69,6 +85,8 @@ pub enum WallpaperCmd {
     Set { name: String },
     /// List registered wallpapers
     List,
+    /// Pick a wallpaper from a wofi menu
+    Menu,
     /// Set wallpaper mode
     Mode {
         /// auto | animated | static
@@ -82,4 +100,38 @@ pub enum ThemeCmd {
     Dark,
     /// Enable light mode (gsettings + matugen light palette)
     Light,
+    /// Toggle between dark and light
+    Toggle,
+}
+
+#[derive(Subcommand)]
+pub enum MonitorCmd {
+    /// List detected displays and their brightness
+    List {
+        /// Re-run ddcutil detect and rebuild the cache
+        #[arg(long, short)]
+        refresh: bool,
+    },
+    /// Set brightness: absolute (60) or relative (+5 / -5)
+    Brightness {
+        value: String,
+        /// Target a specific monitor by connector name (e.g. HDMI-A-1)
+        #[arg(long, short)]
+        monitor: Option<String>,
+        /// Target all monitors
+        #[arg(long, short)]
+        all: bool,
+    },
+    /// Set contrast: absolute (60) or relative (+5 / -5)
+    Contrast {
+        value: String,
+        /// Target a specific monitor by connector name (e.g. HDMI-A-1)
+        #[arg(long, short)]
+        monitor: Option<String>,
+        /// Target all monitors
+        #[arg(long, short)]
+        all: bool,
+    },
+    /// Print the focused monitor's brightness (for waybar)
+    Get,
 }

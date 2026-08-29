@@ -1,16 +1,22 @@
+mod audit;
 mod cli;
 mod config;
 mod daemon;
+mod doctor;
+mod gamemode;
 mod hooks;
 mod installer;
+mod keys;
 mod linker;
+mod menu;
+mod monitor;
 mod output;
 mod theme;
 mod wallpaper;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Command, ThemeCmd, WallpaperCmd};
+use cli::{Cli, Command, MonitorCmd, ThemeCmd, WallpaperCmd};
 use config::{dotfiles_dir, load_machine, load_manifest};
 use std::io;
 use std::path::Path;
@@ -120,20 +126,55 @@ async fn main() -> Result<()> {
         }
 
         Command::Packages(args) => {
-            print_packages(&dotfiles, args.check)?;
+            if args.audit {
+                let manifest = load_manifest(&dotfiles)?;
+                let report = audit::run(&manifest)?;
+                audit::print(&report);
+            } else {
+                print_packages(&dotfiles, args.check)?;
+            }
         }
 
         Command::Wallpaper { cmd } => match cmd {
             WallpaperCmd::Register { path, name } => wallpaper::register(&path, name.as_deref())?,
             WallpaperCmd::Set { name } => wallpaper::set(&name)?,
             WallpaperCmd::List => wallpaper::list()?,
+            WallpaperCmd::Menu => menu::wallpaper_menu()?,
             WallpaperCmd::Mode { mode } => wallpaper::set_mode(&mode)?,
         },
 
         Command::Theme { cmd } => match cmd {
             ThemeCmd::Dark => theme::set(true)?,
             ThemeCmd::Light => theme::set(false)?,
+            ThemeCmd::Toggle => theme::toggle()?,
         },
+
+        Command::Monitor { cmd } => match cmd {
+            MonitorCmd::List { refresh } => monitor::list(refresh)?,
+            MonitorCmd::Brightness {
+                value,
+                monitor: mon,
+                all,
+            } => monitor::brightness(&value, mon.as_deref(), all)?,
+            MonitorCmd::Contrast {
+                value,
+                monitor: mon,
+                all,
+            } => monitor::contrast(&value, mon.as_deref(), all)?,
+            MonitorCmd::Get => monitor::get()?,
+        },
+
+        Command::Menu => menu::show()?,
+
+        Command::Keys => keys::show()?,
+
+        Command::Game => gamemode::toggle()?,
+
+        Command::Doctor => {
+            let manifest = load_manifest(&dotfiles)?;
+            let home = dirs::home_dir().ok_or_else(|| anyhow::anyhow!("no $HOME"))?;
+            doctor::run(&manifest, &dotfiles, &home)?;
+        }
 
         Command::Daemon => {
             daemon::run().await?;
@@ -209,19 +250,7 @@ fn print_status(dotfiles: &Path) -> Result<()> {
     println!("\x1b[1mDaemons\x1b[0m");
     println!("{}", "─".repeat(40));
 
-    let daemons: &[(&str, &str)] = &[
-        ("waybar", "waybar"),
-        ("dunst", "dunst"),
-        ("awww-daemon", "awww-daemon"),
-        ("nm-applet", "nm-applet"),
-        ("udiskie", "udiskie"),
-        ("nextcloud", "nextcloud"),
-        ("wl-paste", "wl-paste"),
-        ("polkit", "polkitd"),
-        ("dots", "dots daemon"),
-    ];
-
-    for (label, pattern) in daemons {
+    for (label, pattern) in doctor::DAEMONS {
         let running = std::process::Command::new("pgrep")
             .args(["-f", pattern])
             .output()

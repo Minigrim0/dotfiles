@@ -4,7 +4,6 @@ use anyhow::{Result, bail};
 
 /// Use paru's library entrypoint for package operations.
 /// `paru::run` returns an exit code (0 == success).
-
 pub async fn install_packages(module: &Module) -> Result<()> {
     // Use paru for both official repo and AUR packages. paru understands
     // both and will forward to pacman/libalpm when appropriate.

@@ -136,6 +136,27 @@ pub fn set(name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Names (stems) of all registered wallpapers, sorted.
+pub fn names() -> Result<Vec<String>> {
+    let wdir = wallpaper_dir();
+    if !wdir.exists() {
+        return Ok(Vec::new());
+    }
+    let mut names: Vec<String> = std::fs::read_dir(&wdir)?
+        .filter_map(|e| e.ok())
+        .filter(|e| e.path().is_file())
+        .filter(|e| !e.file_name().to_string_lossy().ends_with(".still.jpg"))
+        .filter_map(|e| {
+            e.path()
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .map(|s| s.to_string())
+        })
+        .collect();
+    names.sort();
+    Ok(names)
+}
+
 pub fn list() -> Result<()> {
     let wdir = wallpaper_dir();
     if !wdir.exists() {
