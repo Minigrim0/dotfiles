@@ -1,0 +1,27 @@
+# Maintainer: Minigrim0
+pkgname=dots-bin
+pkgver=0.1.0
+pkgrel=1
+pkgdesc="Dotfile manager and desktop glue for Arch + Hyprland (release binary)"
+arch=('x86_64')
+url="https://github.com/Minigrim0/dotfiles"
+license=('custom')
+provides=('dots')
+conflicts=('dots-git')
+depends=('gcc-libs' 'glibc')
+optdepends=(
+    'ddcutil: DDC/CI monitor control (dots monitor)'
+    'brightnessctl: laptop backlight fallback'
+    'matugen: wallpaper color generation'
+    'ffmpeg: video to gif wallpaper conversion'
+    'awww: wallpaper daemon'
+    'wofi: dots menu / keys / wallpaper picker'
+    'libnotify: desktop notifications'
+    'wlogout: power menu'
+)
+source=("dots-${pkgver}::${url}/releases/download/v${pkgver}/dots-linux-x86_64")
+sha256sums=('SKIP') # pin to the release checksum before publishing
+
+package() {
+    install -Dm755 "${srcdir}/dots-${pkgver}" "${pkgdir}/usr/bin/dots"
+}
