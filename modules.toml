@@ -38,6 +38,12 @@ enabled = true
 configs = "dunst"
 packages = ["dunst", "libnotify"]
 
+[modules.daemon]
+enabled = true
+configs = "systemd"
+packages = []
+hooks.post_install = ["systemctl --user daemon-reload", "systemctl --user enable dots.service"]
+
 [modules.osd]
 enabled = true
 packages = ["swayosd"]

@@ -1,0 +1,13 @@
+[Unit]
+Description=dots wallpaper daemon
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=%h/.cargo/bin/dots daemon
+Environment=RUST_LOG=dots=info
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
