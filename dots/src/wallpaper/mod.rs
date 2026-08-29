@@ -12,7 +12,7 @@ mod state;
 
 use dir::wallpaper_dir;
 use helpers::extract_frame;
-pub use helpers::reload_apps;
+pub use helpers::{print_apply_summary, reload_apps};
 pub use state::{load_state, save_state};
 
 use crate::wallpaper::helpers::to_still_path;
@@ -117,7 +117,7 @@ pub fn set(name: &str) -> Result<()> {
         };
 
         let mode_flag = if state.dark_mode { "dark" } else { "light" };
-        info!("Extracting palette from still");
+        tracing::debug!("Extracting palette from still");
         let matugen_status = Command::new("matugen")
             .args([
                 "image",
@@ -129,7 +129,10 @@ pub fn set(name: &str) -> Result<()> {
             ])
             .status()
             .context("running matugen")?;
-        if !matugen_status.success() {
+        if matugen_status.success() {
+            arrow!("palette · matugen -m {}", mode_flag);
+            helpers::print_apply_summary();
+        } else {
             warn!("matugen exited with error");
         }
 

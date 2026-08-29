@@ -1,5 +1,5 @@
 use crate::menu::wofi_pick;
-use anyhow::{Context, Result};
+use anyhow::Result;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -103,7 +103,8 @@ pub fn show() -> Result<()> {
         .map(|b| format!("{:<w$}{}", b.keys, b.desc, w = width))
         .collect();
 
-    wofi_pick("keybinds", &lines).context("wofi closed")?;
+    // Display-only overlay — dismissing it (Escape) is the normal exit.
+    let _ = wofi_pick("keybinds", &lines);
     Ok(())
 }
 

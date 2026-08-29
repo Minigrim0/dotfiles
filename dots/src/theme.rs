@@ -2,7 +2,7 @@ use crate::{arrow, ok};
 use anyhow::{Context, Result};
 use std::process::Command;
 
-use crate::wallpaper::{self, load_state, reload_apps, save_state};
+use crate::wallpaper::{self, load_state, print_apply_summary, reload_apps, save_state};
 
 /// Named preset palettes: seed color fed to matugen instead of the wallpaper.
 const PRESETS: &[(&str, &str)] = &[
@@ -46,6 +46,7 @@ pub fn set_preset(name: &str) -> Result<()> {
 
     let mut state = load_state();
     render_seed(seed, state.dark_mode)?;
+    print_apply_summary();
     reload_apps();
     state.pinned_theme = Some(name.to_string());
     save_state(&state)?;
@@ -100,6 +101,7 @@ pub fn set(dark: bool) -> Result<()> {
         // skip matugen entirely while a preset is pinned.
         if let Some(seed) = preset_seed(&pinned) {
             render_seed(seed, dark)?;
+            print_apply_summary();
             reload_apps();
         }
     } else if !state.current.is_empty() {
