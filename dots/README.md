@@ -27,11 +27,10 @@ daemon, and wraps `syncthing` service management — all driven from a single
 git clone https://github.com/<you>/dotfiles ~/dotfiles
 cd ~/dotfiles/dots
 
-# 2. Build the binary
-cargo build --release
-
-# 3. Make it available on $PATH
-ln -sf "$PWD/target/release/dots" ~/.local/bin/dots
+# 2. Build and install to ~/.cargo/bin
+# (must be ~/.cargo/bin, not ~/.local/bin — Hyprland's session PATH
+#  includes the former but not the latter, and keybinds exec `dots`)
+cargo install --path .
 ```
 
 Pre-built binaries for `x86_64-unknown-linux-gnu` are attached to each

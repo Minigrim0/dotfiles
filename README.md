@@ -18,8 +18,7 @@ Rust CLI that symlinks configs, installs packages, and runs the desktop glue
 
 ```sh
 git clone <repo-url> && cd dotfiles
-cargo build --release --manifest-path dots/Cargo.toml
-install -m755 dots/target/release/dots ~/.local/bin/dots
+cargo install --path dots        # installs to ~/.cargo/bin (in Hyprland's PATH)
 
 dots install --machine desktop   # packages + hooks + machine extras
 dots sync    --machine desktop   # symlink configs into $HOME
