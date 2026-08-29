@@ -24,3 +24,11 @@ output_path = "~/.config/gtk-3.0/colors.css"
 [templates.gtk4-colors]
 input_path  = "~/.config/matugen/templates/gtk-colors.css"
 output_path = "~/.config/gtk-4.0/colors.css"
+
+[templates.wlogout-colors]
+input_path  = "~/.config/matugen/templates/wlogout-colors.css"
+output_path = "~/.config/wlogout/colors.css"
+
+[templates.swayosd]
+input_path  = "~/.config/matugen/templates/swayosd.css"
+output_path = "~/.config/swayosd/style.css"

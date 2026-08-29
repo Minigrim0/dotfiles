@@ -10,11 +10,15 @@ enabled = true
 packages = [
     "hyprland",
     "hyprlock",
+    "hypridle",
+    "hyprsunset",
+    "hyprpicker",
     "xdg-desktop-portal-hyprland",
     "xdg-desktop-portal-gtk",
     "polkit-kde-agent",
     "playerctl",
     "hyprshot",
+    "satty",
     "wl-clipboard",
     "cliphist",
 ]
@@ -34,11 +38,21 @@ enabled = true
 configs = "dunst"
 packages = ["dunst", "libnotify"]
 
+[modules.osd]
+enabled = true
+packages = ["swayosd"]
+
+[modules.session]
+enabled = true
+configs = "wlogout"
+packages = []
+aur_packages = ["wlogout"]
+
 [modules.wallpaper]
 enabled = true
 configs = "matugen"
-packages = ["awww", "matugen", "ffmpeg"]
-aur_packages = []
+packages = ["matugen", "ffmpeg"]
+aur_packages = ["awww-bin"]
 
 [modules.terminal]
 enabled = true
