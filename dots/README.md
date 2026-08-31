@@ -14,7 +14,7 @@ daemon, and wraps `syncthing` service management — all driven from a single
 |------|---------|
 | Arch Linux | Only supported distro |
 | `paru` or `yay` | AUR helper used by `install` |
-| `swww` | Wayland wallpaper daemon |
+| `awww` | Wayland wallpaper daemon |
 | `matugen` | Material-You colour generation from wallpaper |
 | `ffmpeg` | Video-to-GIF conversion for animated wallpapers |
 
@@ -199,12 +199,73 @@ Every change sends a dunst progress notification (stacked, replaceable).
 ### menu
 
 Settings hub rendered with wofi: wallpaper picker, theme switcher, brightness
-presets, idle toggle, night light (hyprsunset), game mode, keybind cheatsheet,
-and power menu (wlogout).
+presets, idle toggle, night light (hyprsunset), do-not-disturb, game mode,
+keybind cheatsheet, and power menu (wlogout).
 
 ```sh
 dots menu
 ```
+
+### wifi / audio / bluetooth
+
+Connectivity and audio pickers drawn with wofi, so matugen themes them with
+everything else and they match the launcher. They are what the bar's network,
+volume and Bluetooth icons open, and they replace `nm-connection-editor`,
+`pavucontrol` and `blueman-manager` for everyday use — those stay installed for
+the rare deep configuration.
+
+```sh
+dots wifi        # scan, connect (prompting for a passphrase only if asked),
+                 # rescan, disconnect, toggle the radio
+dots audio       # switch output or input — and move the streams that are
+                 # already playing, which is the part pavucontrol makes you do
+dots bluetooth   # connect / disconnect a known device, scan, power off
+```
+
+### dnd / night
+
+```sh
+dots dnd          # pause or resume notifications (toggle | on | off)
+dots night        # night light via hyprsunset  (toggle | on | off)
+```
+
+`night` talks to the running hyprsunset daemon over `hyprctl` rather than
+killing it, so the evening schedule in `hyprsunset.conf` survives the toggle.
+Both raise a waybar signal, which is how the bar indicators update.
+
+### bar
+
+Print one waybar `custom/*` module's JSON and exit.
+
+```sh
+dots bar game        # game mode on
+dots bar dnd         # notifications paused, and how many are waiting
+dots bar night       # screen tinted, and to what temperature
+dots bar brightness  # DDC/CI brightness (desktop)
+dots bar temp        # CPU temperature, above the critical threshold only
+dots bar drift       # packages declared-but-missing + configs not symlinked
+dots bar updates     # pending updates, above a threshold
+dots bar wallpaper   # a render is in flight
+```
+
+Empty `text` means waybar hides the module, which is how "silent until it
+matters" is implemented. Each module is configured `"interval": "once"` with a
+`signal`, and the command that *changes* the state raises it — so nothing
+polls. That is what retired the five-second DDC read the old brightness module
+did on the desktop.
+
+| Topic | Signal | Raised by |
+|-------|--------|-----------|
+| `game` | `SIGRTMIN+5` | `dots game` |
+| `dnd` | `SIGRTMIN+6` | `dots dnd` |
+| `night` | `SIGRTMIN+7` | `dots night` |
+| `brightness` | `SIGRTMIN+8` | `dots monitor brightness` |
+| `drift` | `SIGRTMIN+9` | `dots sync`, `dots install` |
+| `updates` | `SIGRTMIN+10` | the module's own on-click, after `paru -Syu` |
+| `wallpaper` | `SIGRTMIN+11` | `dots wallpaper set`, start and end |
+
+`temp` and `drift` also carry a slow interval as a backstop, since the system
+can drift without dots being told.
 
 ### keys
 
@@ -311,8 +372,10 @@ static_on_battery = true    # switch to static wallpaper when on battery
 brightness_up   = "brightnessctl -e4 -n2 set 5%+"
 brightness_down = "brightnessctl -e4 -n2 set 5%-"
 
-[waybar]
-extra_modules_right = ["battery"]
+# The bar's per-machine module list is not expressed here — it lives in
+# configs/waybar/.config/waybar/machine-<name>.jsonc, which `dots sync
+# --machine <name>` symlinks to ~/.config/waybar/machine.jsonc for
+# config.jsonc to `include`. Same shape as hypr's machine.conf.
 ```
 
 ---

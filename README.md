@@ -42,6 +42,30 @@ templates in `configs/matugen/` into hyprland, waybar, kitty, dunst, GTK,
 wlogout and swayosd colors. `dots theme dark|light|toggle` switches the global
 scheme.
 
+Typography is centralised the same way. Every GTK-CSS surface — waybar, wofi,
+swayosd, wlogout — starts with `@import "../dots/fonts.css"`, so the interface
+face is defined once in `configs/fonts/`. Three roles: **Adwaita Sans** for
+interface text, **JetBrainsMono Nerd Font** for the terminal and anything
+numeric, and **Symbols Nerd Font** as a glyph-only fallback — which is what
+lets the UI use a real sans and still render `󰤨`.
+
+## The bar
+
+Waybar, laid out as three floating islands built to Hyprland's own geometry
+(radius 12, 14px margins, 2px borders). No layer blur: Hyprland 0.56 dropped
+`ignorezero`, so blurring the bar smears a band across the full width of the
+screen — gaps included — which is the one thing islands exist to avoid. Most
+modules are invisible at
+rest and appear only when they have something to say: mic/screen capture, a
+failed systemd unit, paused notifications, game mode, night light, a held idle
+inhibitor, disk pressure, CPU temperature, repo drift, pending updates. Volume
+and brightness live in a hover drawer with real sliders, because swayosd
+already reports them at the moment they change.
+
+`config.jsonc` is shared; `machine-<name>.jsonc` is symlinked to
+`machine.jsonc` and `include`d, mirroring how `hyprland.conf` sources
+`machine.conf`.
+
 ## Daily driving
 
 | Keys | Action |
@@ -51,6 +75,10 @@ scheme.
 | `Super + W` | Wallpaper picker |
 | `Super + C` | Clipboard history |
 | `Super + Escape` | Power menu |
+| `Super + Shift + N` | Wi-Fi picker (`dots wifi`) |
+| `Super + Shift + B` | Bluetooth picker (`dots bluetooth`) |
+| `Super + Shift + V` | Audio output / input picker (`dots audio`) |
+| `Super + Shift + D` | Pause / resume notifications (`dots dnd`) |
 
 `dots status`, `dots doctor` and `dots packages --audit` report on symlinks,
 daemons and package drift.
