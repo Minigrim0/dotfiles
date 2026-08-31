@@ -82,12 +82,23 @@ hooks.post_install = ["chsh -s /bin/zsh"]
 
 [modules.fonts]
 enabled = true
-packages = ["noto-fonts", "noto-fonts-emoji", "ttf-firacode-nerd", "ttf-jetbrains-mono-nerd"]
+configs = "fonts"
+packages = [
+    # interface — Adwaita Sans (an Inter derivative, matches GTK apps)
+    "adwaita-fonts",
+    # data / code — kitty, and the numeric modules in waybar
+    "ttf-jetbrains-mono-nerd",
+    # glyphs — lets the UI use a real sans and still render Nerd Font icons
+    "ttf-nerd-fonts-symbols",
+    "noto-fonts",
+    "noto-fonts-emoji",
+]
 aur_packages = []
 
 [modules.theme]
 enabled = true
-packages = ["papirus-icon-theme", "qt6ct", "kvantum", "adwaita-icon-theme"]
+configs = "gtk"
+packages = ["qt6ct", "kvantum", "adwaita-icon-theme"]
 aur_packages = ["bibata-cursor-theme-bin"]
 
 # Audio / Bluetooth / Network
@@ -129,6 +140,8 @@ packages = [
     "git",
     "imagemagick",
     "screen",
+    # checkupdates — backs the bar's pending-updates module
+    "pacman-contrib",
 ]
 
 # Development

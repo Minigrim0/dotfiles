@@ -2,9 +2,7 @@
    Source template: ~/.config/matugen/templates/wofi-menu.css
    Tile-grid style used by `dots menu` (via --conf menu-conf). */
 
-* {
-    font-family: "AnonymicePro Nerd Font", monospace;
-}
+@import "../dots/fonts.css";
 
 window {
     border: 2px solid {{colors.primary.default.hex}};

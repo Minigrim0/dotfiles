@@ -1,0 +1,20 @@
+/* ===========================================================================
+   Typography for every GTK-CSS surface: waybar, wofi, wofi-menu, swayosd,
+   wlogout. Each of them starts with `@import "../dots/fonts.css";` — change
+   the face here, not there.
+
+   Three roles, three faces:
+     interface  Adwaita Sans          this file
+     data/code  JetBrainsMono Nerd    kitty.conf, and #clock etc. in waybar
+     glyphs     Symbols Nerd Font     fallback below — this is what lets the
+                                      UI use a real sans and still render 󰤨
+
+   Adwaita Sans ships with `adwaita-fonts` and is an Inter derivative, so GTK
+   applications match the desktop chrome for free. Swap "Inter" to the front
+   of the stack to pin it independently of GNOME's release cadence.
+   =========================================================================== */
+
+* {
+    font-family: "Adwaita Sans", "Inter", "Symbols Nerd Font", sans-serif;
+    font-size: 13px;
+}

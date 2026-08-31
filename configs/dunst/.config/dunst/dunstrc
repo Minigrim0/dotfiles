@@ -25,7 +25,7 @@
     separator_color      = frame
     corner_radius        = 12
 
-    font                 = AnonymicePro Nerd Font 11
+    font                 = Adwaita Sans 10.5
     markup               = full
     format               = "<b>%s</b>\n%b"
     alignment            = left
