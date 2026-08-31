@@ -1,4 +1,4 @@
-use crate::ok;
+use crate::{bar, ok};
 use anyhow::{Context, Result};
 use std::process::Command;
 
@@ -14,18 +14,33 @@ fn notify(body: &str) {
         .status();
 }
 
-/// Toggle game mode: animations, blur, shadows and dim off for max FPS.
-/// Restores everything with a config reload.
-pub fn toggle() -> Result<()> {
+/// Whether the compositor is currently stripped down for games.
+///
+/// Inferred from `animations:enabled` rather than stored, so an unrelated
+/// `hyprctl reload` silently leaves game mode — which is exactly why the bar
+/// shows the state instead of leaving you to guess.
+pub fn is_on() -> Result<bool> {
     let out = Command::new("hyprctl")
         .args(["getoption", "animations:enabled", "-j"])
         .output()
         .context("running hyprctl — is Hyprland running?")?;
     let opt: serde_json::Value =
         serde_json::from_slice(&out.stdout).context("parsing hyprctl output")?;
-    let enabled = opt.get("int").and_then(|v| v.as_i64()).unwrap_or(1) == 1;
+    Ok(opt.get("int").and_then(|v| v.as_i64()).unwrap_or(1) == 0)
+}
 
-    if enabled {
+/// Toggle game mode: animations, blur, shadows and dim off for max FPS.
+/// Restores everything with a config reload.
+pub fn toggle() -> Result<()> {
+    if is_on()? {
+        let status = Command::new("hyprctl")
+            .arg("reload")
+            .status()
+            .context("running hyprctl reload")?;
+        anyhow::ensure!(status.success(), "hyprctl reload failed");
+        notify("Game mode OFF");
+        ok!("Game mode OFF (config reloaded)");
+    } else {
         let status = Command::new("hyprctl")
             .args([
                 "--batch",
@@ -39,14 +54,8 @@ pub fn toggle() -> Result<()> {
         anyhow::ensure!(status.success(), "hyprctl --batch failed");
         notify("Game mode ON");
         ok!("Game mode ON (animations, blur, shadows off)");
-    } else {
-        let status = Command::new("hyprctl")
-            .arg("reload")
-            .status()
-            .context("running hyprctl reload")?;
-        anyhow::ensure!(status.success(), "hyprctl reload failed");
-        notify("Game mode OFF");
-        ok!("Game mode OFF (config reloaded)");
     }
+
+    bar::refresh(bar::SIG_GAME);
     Ok(())
 }

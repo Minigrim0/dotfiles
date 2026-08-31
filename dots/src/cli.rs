@@ -34,6 +34,28 @@ pub enum Command {
     },
     /// Settings hub (wofi menu)
     Menu,
+    /// Wi-Fi picker — connect, rescan, toggle the radio (wofi)
+    Wifi,
+    /// Audio output / input picker, moving live streams too (wofi)
+    Audio,
+    /// Bluetooth device picker — connect, disconnect, scan (wofi)
+    Bluetooth,
+    /// Pause or resume notifications: toggle | on | off
+    Dnd {
+        #[arg(default_value = "toggle")]
+        action: String,
+    },
+    /// Night light (hyprsunset): toggle | on | off
+    Night {
+        #[arg(default_value = "toggle")]
+        action: String,
+    },
+    /// Print one waybar custom module's JSON and exit.
+    ///
+    /// Topics: game, dnd, night, brightness, drift, updates, wallpaper.
+    /// Modules run "interval": "once" with a signal, so nothing polls — the
+    /// dots command that changes the state raises it.
+    Bar { topic: String },
     /// Keybind cheatsheet overlay (wofi)
     Keys,
     /// Toggle game mode (animations / blur / shadows off)

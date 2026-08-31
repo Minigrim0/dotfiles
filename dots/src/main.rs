@@ -1,4 +1,5 @@
 mod audit;
+mod bar;
 mod cli;
 mod config;
 mod daemon;
@@ -11,6 +12,7 @@ mod linker;
 mod menu;
 mod monitor;
 mod output;
+mod pickers;
 mod setup;
 mod theme;
 mod wallpaper;
@@ -85,6 +87,9 @@ async fn run(cli: Cli) -> Result<()> {
                 head!("Applying machine symlinks for '{}'", machine_name);
                 linker::apply_machine_symlinks(&dotfiles, &mc, &home)?;
             }
+
+            // Symlinks just changed, so the bar's drift indicator is stale.
+            bar::refresh(bar::SIG_DRIFT);
         }
 
         Command::Install(args) => {
@@ -142,6 +147,9 @@ async fn run(cli: Cli) -> Result<()> {
                 head!("Extra packages for '{}'", machine_name);
                 installer::install_extra(&mc.packages.extra).await?;
             }
+
+            // Packages just changed, so the bar's drift indicator is stale.
+            bar::refresh(bar::SIG_DRIFT);
         }
 
         Command::Status => {
@@ -194,6 +202,18 @@ async fn run(cli: Cli) -> Result<()> {
 
         Command::Menu => menu::show()?,
 
+        Command::Wifi => pickers::wifi()?,
+
+        Command::Audio => pickers::audio()?,
+
+        Command::Bluetooth => pickers::bluetooth()?,
+
+        Command::Dnd { action } => menu::set_dnd(parse_action(&action)?)?,
+
+        Command::Night { action } => menu::set_night_light(parse_action(&action)?)?,
+
+        Command::Bar { topic } => bar::emit(&topic)?,
+
         Command::Keys => keys::show()?,
 
         Command::Game => gamemode::toggle()?,
@@ -219,6 +239,16 @@ async fn run(cli: Cli) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// `toggle` | `on` | `off` → None | Some(true) | Some(false)
+fn parse_action(action: &str) -> Result<Option<bool>> {
+    match action {
+        "toggle" => Ok(None),
+        "on" => Ok(Some(true)),
+        "off" => Ok(Some(false)),
+        other => anyhow::bail!("expected toggle, on or off — got '{}'", other),
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 mode=dmenu
 location=center
 width=560
-height=304
+height=416
 columns=4
 hide_search=true
 allow_markup=true

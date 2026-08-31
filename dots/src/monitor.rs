@@ -1,4 +1,4 @@
-use crate::{arrow, ok, warn};
+use crate::{arrow, bar, ok, warn};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -312,30 +312,33 @@ fn apply(code: &str, label: &str, value: &str, monitor: Option<&str>, all: bool)
 }
 
 pub fn brightness(value: &str, monitor: Option<&str>, all: bool) -> Result<()> {
-    apply(VCP_BRIGHTNESS, "Brightness", value, monitor, all)
+    apply(VCP_BRIGHTNESS, "Brightness", value, monitor, all)?;
+    // The bar's brightness module is `interval: once` + signal, so this is the
+    // only thing that makes it update — and why nothing polls the i2c bus.
+    bar::refresh(bar::SIG_BRIGHTNESS);
+    Ok(())
 }
 
 pub fn contrast(value: &str, monitor: Option<&str>, all: bool) -> Result<()> {
     apply(VCP_CONTRAST, "Contrast", value, monitor, all)
 }
 
-/// Print focused monitor's brightness as a bare number (waybar-friendly).
-/// Polled on an interval — never fails hard, prints nothing when DDC is
-/// momentarily unreadable so the bar shows a blank instead of an error toast.
-pub fn get() -> Result<()> {
-    let Ok(displays) = load_cache(false) else {
-        return Ok(());
-    };
+/// The focused monitor's brightness, or None when DDC is momentarily
+/// unreadable. Never fails hard: a blank bar beats an error toast.
+pub fn current_percent() -> Option<u32> {
+    let displays = load_cache(false).ok()?;
     if displays.is_empty() {
-        if let Some(pct) = brightnessctl_get() {
-            println!("{}", pct);
-        }
-        return Ok(());
+        return brightnessctl_get();
     }
-    if let Some(d) = targets(&displays, None, false).first()
-        && let Ok((cur, _)) = get_vcp(d.bus, VCP_BRIGHTNESS)
-    {
-        println!("{}", cur);
+    let focused = targets(&displays, None, false);
+    let d = focused.first()?;
+    get_vcp(d.bus, VCP_BRIGHTNESS).ok().map(|(cur, _)| cur)
+}
+
+/// Print it as a bare number, for anything that wants it on stdout.
+pub fn get() -> Result<()> {
+    if let Some(pct) = current_percent() {
+        println!("{}", pct);
     }
     Ok(())
 }
