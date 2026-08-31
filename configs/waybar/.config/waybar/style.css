@@ -1,156 +1,267 @@
+/* Typography — shared with wofi, swayosd and wlogout. Change faces there. */
+@import "../dots/fonts.css";
+
 /* Generated colors imported from matugen output */
 @import "colors.css";
 
 /* ============================================================================
-   Base
-   ============================================================================ */
+   Islands
+
+   The geometry is Hyprland's, so the bar reads as part of the same system:
+     radius 12       = decoration:rounding
+     border 2px      = general:border_size
+     margins 14 / 8  = general:gaps_out (set in config.jsonc)
+   ========================================================================== */
 
 * {
-    font-family: "AnonymicePro Nerd Font", monospace;
-    font-size: 13px;
     border: none;
     border-radius: 0;
     min-height: 0;
     margin: 0;
     padding: 0;
+    /* GTK renders a box-shadow on hover by default; kill it globally. */
+    box-shadow: none;
+    text-shadow: none;
 }
 
+/* The bar window itself is invisible — only the islands are drawn. */
 window#waybar {
-    background-color: alpha(@background, 0.88);
+    background: transparent;
     color: @text;
 }
-
-/* ============================================================================
-   Sections
-   ============================================================================ */
 
 .modules-left,
 .modules-center,
 .modules-right {
-    padding: 0 8px;
+    padding: 0;
 }
 
-/* ============================================================================
-   Common widget styles
-   ============================================================================ */
+/* --- the island shape ---------------------------------------------------- */
 
 #workspaces,
 #clock,
-#tray,
-#bluetooth,
-#network,
-#pulseaudio,
-#custom-brightness,
-#custom-power {
-    padding: 2px 8px;
-    margin: 4px 2px;
-    border-radius: 6px;
-    background-color: @surface;
+#mpris,
+#submap,
+#custom-game,
+#right {
+    background-color: alpha(@surface, 0.72);
+    border: 2px solid @surface_variant;
+    border-radius: 12px;
+    min-height: 30px;
+    padding: 0 4px;
     color: @text;
+}
+
+/* Anything in an island that is a plain readout gets the same metrics. */
+#clock,
+#mpris,
+#submap,
+#custom-game {
+    padding: 0 12px;
 }
 
 /* ============================================================================
    Workspaces
-   ============================================================================ */
-
-#workspaces {
-    background-color: transparent;
-    padding: 0;
-}
+   ========================================================================== */
 
 #workspaces button {
-    padding: 2px 8px;
-    margin: 4px 2px;
-    border-radius: 6px;
-    background-color: @surface;
-    color: @on_surface;
-    border: none;
+    color: @dim;
+    background: transparent;
+    border-radius: 7px;
+    min-width: 22px;
+    /* Inset from the island's 30px interior so the active fill reads as a
+       cell inside the island, not as a block bridging its border. */
+    margin: 4px 1px;
+    padding: 0 6px;
+    transition: background-color 160ms ease, color 160ms ease;
+}
+
+/* Occupied but not focused: full-strength, so "what is running where" is
+   answerable at a glance. Weight rather than an underline — GTK renders an
+   inset box-shadow on a rounded button as a heavy arc, not a rule. */
+#workspaces button.persistent:not(.empty):not(.active) {
+    color: @text;
+    font-weight: 500;
+}
+
+/* Persistent and empty: present, but clearly nothing there. */
+#workspaces button.empty:not(.active) {
+    color: alpha(@dim, 0.45);
+    font-weight: 400;
 }
 
 #workspaces button.active {
     background-color: @accent;
     color: @on_accent;
-}
-
-#workspaces button:hover {
-    background-color: @surface_variant;
-    color: @text;
     box-shadow: none;
 }
 
-/* ============================================================================
-   Window title
-   ============================================================================ */
-
-#window {
-    padding: 2px 10px;
-    margin: 4px 2px;
-    border-radius: 6px;
-    background-color: transparent;
-    color: alpha(@text, 0.7);
-    font-style: italic;
-}
-
-/* ============================================================================
-   Clock
-   ============================================================================ */
-
-#clock {
-    background-color: @accent;
-    color: @on_accent;
-    font-weight: bold;
-}
-
-/* ============================================================================
-   Tray
-   ============================================================================ */
-
-#tray {
-    background-color: @surface;
-}
-
-#tray > .passive {
-    -gtk-icon-effect: dim;
-}
-
-#tray > .needs-attention {
-    -gtk-icon-effect: highlight;
+#workspaces button.urgent {
     background-color: @error;
+    color: @error_text;
+    box-shadow: none;
 }
 
-/* ============================================================================
-   Status indicators
-   ============================================================================ */
-
-#bluetooth.connected {
-    color: @accent;
-}
-
-#bluetooth.disabled {
-    color: alpha(@text, 0.4);
-}
-
-#network.disconnected {
-    color: @error;
-}
-
-#pulseaudio.muted {
-    color: alpha(@text, 0.4);
-}
-
-/* ============================================================================
-   Battery (laptop only)
-   ============================================================================ */
-
-#battery {
-    padding: 2px 8px;
-    margin: 4px 2px;
-    border-radius: 6px;
-    background-color: @surface;
+#workspaces button:hover {
+    background-color: alpha(@surface_variant, 0.7);
     color: @text;
 }
 
-#battery.charging {
+/* ============================================================================
+   Clock, media, submap, game mode
+   ========================================================================== */
+
+#clock {
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+    font-feature-settings: "tnum";
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+
+#mpris {
+    color: @dim;
+    font-size: 12.5px;
+}
+
+#mpris.playing {
+    color: @text;
+}
+
+#mpris:hover {
+    color: @accent;
+}
+
+/* Both of these render an empty string when inactive, and waybar hides
+   modules whose label is empty — so they cost nothing at rest. */
+#submap,
+#custom-game {
+    color: @accent;
+    border-color: @accent;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+}
+
+/* ============================================================================
+   Right island
+   ========================================================================== */
+
+#right {
+    padding: 0 2px;
+}
+
+#privacy,
+#systemd-failed-units,
+#custom-dnd,
+#custom-night,
+#custom-drift,
+#custom-updates,
+#custom-wallpaper,
+#idle_inhibitor,
+#disk,
+#custom-temp,
+#tray,
+#battery,
+#bluetooth,
+#network,
+#pulseaudio,
+#upower,
+#custom-brightness,
+#custom-expand,
+#custom-power {
+    color: @dim;
+    padding: 0 8px;
+    min-height: 26px;
+    transition: color 160ms ease;
+}
+
+/* Numbers line up and stop changing width as digits change. */
+#battery,
+#disk,
+#custom-temp,
+#upower,
+#custom-brightness,
+#custom-updates,
+#custom-drift,
+#systemd-failed-units {
+    font-family: "JetBrainsMono Nerd Font", "Symbols Nerd Font", monospace;
+    font-feature-settings: "tnum";
+    font-size: 12px;
+}
+
+/* --- links that are up read as present, not as decoration ---------------- */
+
+#bluetooth.connected,
+#network.wifi,
+#network.ethernet {
+    color: @text;
+}
+
+#bluetooth.disabled,
+#bluetooth.off {
+    color: alpha(@dim, 0.45);
+}
+
+#network.disconnected,
+#network.linked {
+    color: @error_text;
+}
+
+#pulseaudio.muted {
+    color: @error_text;
+}
+
+#bluetooth:hover,
+#network:hover,
+#pulseaudio:hover,
+#tray:hover {
+    color: @accent;
+}
+
+/* --- states that mean "something wants you" ------------------------------ */
+
+#privacy {
+    color: @warning;
+    padding: 0 6px;
+}
+
+#privacy-item.screenshare,
+#privacy-item.audio-in {
+    color: @warning;
+}
+
+#systemd-failed-units,
+#custom-temp.critical {
+    color: @error_text;
+}
+
+#custom-dnd {
+    color: @warning;
+}
+
+#custom-night {
+    color: @warning;
+}
+
+#idle_inhibitor.activated {
+    color: @accent;
+}
+
+#custom-drift,
+#custom-updates,
+#disk.warning {
+    color: @warning;
+}
+
+#disk.critical {
+    color: @error_text;
+}
+
+#custom-wallpaper {
+    color: @accent;
+}
+
+#battery.charging,
+#upower.charging {
     color: @accent;
 }
 
@@ -159,25 +270,100 @@ window#waybar {
 }
 
 #battery.critical:not(.charging) {
-    color: @error;
-    animation: blink 0.5s linear infinite alternate;
+    color: @error_text;
+    animation: blink 1s ease-in-out infinite alternate;
 }
 
 @keyframes blink {
-    to { opacity: 0.5; }
+    to { opacity: 0.45; }
+}
+
+/* --- tray ---------------------------------------------------------------- */
+
+#tray {
+    padding: 0 6px;
+}
+
+#tray > .passive {
+    -gtk-icon-effect: dim;
+}
+
+#tray > .needs-attention {
+    -gtk-icon-effect: highlight;
 }
 
 /* ============================================================================
-   Power button
-   ============================================================================ */
+   Drawer — detail on demand
+   ========================================================================== */
+
+#custom-expand {
+    color: @dim;
+    padding: 0 6px;
+    font-size: 11px;
+}
+
+#custom-expand:hover {
+    color: @accent;
+}
+
+/* `children-class: "tool"` in the group config. Hidden members are still in
+   the tree, so give them the spacing they will need when revealed. */
+.tool {
+    margin: 0 2px;
+}
 
 #custom-power {
-    background-color: transparent;
-    color: alpha(@text, 0.6);
-    padding: 2px 6px;
-    font-size: 15px;
+    color: @dim;
+    font-size: 14px;
 }
 
 #custom-power:hover {
-    color: @error;
+    color: @error_text;
+}
+
+/* --- sliders ------------------------------------------------------------- */
+
+#pulseaudio-slider,
+#backlight-slider {
+    min-width: 96px;
+    padding: 0 8px;
+}
+
+#pulseaudio-slider trough,
+#backlight-slider trough {
+    background-color: @surface_variant;
+    border-radius: 999px;
+    min-height: 4px;
+    min-width: 96px;
+}
+
+#pulseaudio-slider highlight,
+#backlight-slider highlight {
+    background-color: @accent;
+    border-radius: 999px;
+    min-height: 4px;
+}
+
+#pulseaudio-slider slider,
+#backlight-slider slider {
+    background-color: @accent;
+    border-radius: 999px;
+    min-height: 12px;
+    min-width: 12px;
+    margin: -4px;
+}
+
+/* ============================================================================
+   Tooltips — same island treatment, so hovering doesn't leave the design
+   ========================================================================== */
+
+tooltip {
+    background-color: alpha(@surface, 0.96);
+    border: 2px solid @surface_variant;
+    border-radius: 12px;
+}
+
+tooltip label {
+    color: @text;
+    padding: 4px;
 }

@@ -125,14 +125,24 @@ pub fn apply_machine_symlinks(dotfiles: &Path, mc: &MachineConfig, home: &Path) 
         );
     }
 
-    // ~/.config/waybar/config.jsonc → configs/waybar/.config/waybar/config-<name>.jsonc (if exists)
+    // ~/.config/waybar/machine.jsonc → configs/waybar/.config/waybar/machine-<name>.jsonc
+    //
+    // config.jsonc is a single shared file that `include`s this one, mirroring
+    // how hyprland.conf sources machine.conf. Waybar resolves duplicate keys in
+    // favour of the including file, so machine.jsonc owns modules-right, the
+    // groups, and the machine's brightness and temperature backends.
     let waybar_cfg_src = dotfiles
         .join("configs/waybar/.config/waybar")
-        .join(format!("config-{}.jsonc", name));
-    let waybar_cfg_dst = home.join(".config/waybar/config.jsonc");
+        .join(format!("machine-{}.jsonc", name));
+    let waybar_cfg_dst = home.join(".config/waybar/machine.jsonc");
 
     if waybar_cfg_src.exists() {
         print_link_status(link(&waybar_cfg_src, &waybar_cfg_dst)?, &waybar_cfg_dst);
+    } else {
+        warn!(
+            "machine-{}.jsonc not found, skipping waybar machine link",
+            name
+        );
     }
 
     Ok(())

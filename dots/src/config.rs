@@ -57,8 +57,6 @@ pub struct MachineConfig {
     pub wallpaper: WallpaperConfig,
     #[serde(default)]
     pub hyprland: HyprlandConfig,
-    #[serde(default)]
-    pub waybar: WaybarConfig,
 }
 
 #[derive(Debug, Deserialize)]
@@ -83,12 +81,6 @@ pub struct WallpaperConfig {
 pub struct HyprlandConfig {
     pub brightness_up: String,
     pub brightness_down: String,
-}
-
-#[derive(Debug, Deserialize, Default)]
-pub struct WaybarConfig {
-    #[serde(default)]
-    pub extra_modules_right: Vec<String>,
 }
 
 /// ~/.config/dots/config.toml — written by `dots init` / `dots migrate`.

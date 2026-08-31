@@ -15,6 +15,5 @@ static_on_battery = false
 brightness_up   = "ddcutil setvcp 10 + 5"
 brightness_down = "ddcutil setvcp 10 - 5"
 
-[waybar]
-# No battery module on desktop
-extra_modules_right = []
+# The bar's module list lives in configs/waybar/.config/waybar/machine-desktop.jsonc,
+# symlinked to ~/.config/waybar/machine.jsonc and `include`d by config.jsonc.

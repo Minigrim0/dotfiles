@@ -1,110 +1,272 @@
 {
+    // =======================================================================
+    // Islands: three floating groups, built to Hyprland's own geometry
+    // (rounding 12, gaps_out 14, border_size 2 — see hyprland.conf).
+    //
+    // Anything that differs per machine lives in machine.jsonc, symlinked by
+    // `dots sync --machine <name>` from machine-<name>.jsonc. Waybar resolves
+    // duplicate keys in favour of the *including* file, so machine-specific
+    // keys — modules-right, group/right, group/tools, the brightness backend —
+    // must NOT be defined here.
+    // =======================================================================
+
     "layer": "top",
     "position": "top",
-    "height": 32,
+    "height": 34,
+    "spacing": 8,
+    "margin-top": 8,
+    "margin-left": 14,
+    "margin-right": 14,
     "exclusive": true,
     "passthrough": false,
+    "reload_style_on_change": true,
 
-    "modules-left": [
-        "hyprland/workspaces",
-        "hyprland/window"
-    ],
+    "include": ["~/.config/waybar/machine.jsonc"],
 
-    "modules-center": [
-        "clock"
-    ],
+    "modules-left": ["hyprland/workspaces", "custom/game", "hyprland/submap"],
+    "modules-center": ["clock", "mpris"],
 
-    "modules-right": [
-        "tray",
-        "bluetooth",
-        "network",
-        "pulseaudio",
-        "custom/brightness",
-        // battery is appended here on laptop (machine.conf.jsonc)
-        "custom/power"
-    ],
-
-    // -----------------------------------------------------------------------
+    // =======================================================================
     // Left
-    // -----------------------------------------------------------------------
+    // =======================================================================
 
     "hyprland/workspaces": {
         "format": "{id}",
         "on-click": "activate",
-        "sort-by-number": true
+        "sort-by-number": true,
+        // Five cells always present, so the bar shows what exists and not just
+        // where you are. `.empty` / `.persistent` / `.active` are styled in CSS.
+        "persistent-workspaces": { "*": 5 }
     },
 
-    "hyprland/window": {
-        "max-length": 60,
-        "separate-outputs": true
+    // Visible only while `dots game` has animations/blur/shadows off.
+    "custom/game": {
+        "exec": "dots bar game",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 5,
+        "on-click": "dots game"
     },
 
-    // -----------------------------------------------------------------------
+    // Empty string when no submap is active — waybar hides empty modules.
+    "hyprland/submap": {
+        "format": "{}",
+        "tooltip": false
+    },
+
+    // =======================================================================
     // Center
-    // -----------------------------------------------------------------------
+    // =======================================================================
 
     "clock": {
-        "format": " {:%H:%M}",
-        "format-alt": " {:%A, %B %d}",
+        "format": "{:%H:%M}",
+        "format-alt": "{:%a %d %b   %H:%M}",
         "tooltip-format": "<tt>{calendar}</tt>",
         "calendar": {
-            "mode": "year",
-            "mode-mon-col": 3
-        }
+            "mode": "month",
+            "on-scroll": 1,
+            "format": {
+                "months": "<span weight='600'>{}</span>",
+                "today": "<span weight='700' underline='single'>{}</span>"
+            }
+        },
+        "on-scroll": { "calendar": 1 }
     },
 
-    // -----------------------------------------------------------------------
-    // Right
-    // -----------------------------------------------------------------------
+    // Its own island, and only while something is actually playing.
+    "mpris": {
+        "format": "{status_icon}  {dynamic}",
+        "status-icons": { "playing": "󰎆", "paused": "󰏤" },
+        "dynamic-order": ["title", "artist"],
+        "dynamic-separator": " — ",
+        "dynamic-len": 40,
+        "max-length": 44,
+        "ignored-players": ["firefox"],
+        "tooltip-format": "{player}\n{title}\n{artist}",
+        "on-click": "playerctl play-pause",
+        "on-click-right": "playerctl next",
+        "on-click-middle": "playerctl previous"
+    },
+
+    // =======================================================================
+    // Right — shared module definitions.
+    // The list itself (group/right) is machine.jsonc's job.
+    // =======================================================================
+
+    // Silent unless something is capturing the mic or the screen.
+    "privacy": {
+        "icon-size": 14,
+        "icon-spacing": 8,
+        "transition-duration": 220,
+        "modules": [
+            { "type": "screenshare", "tooltip": true, "tooltip-icon-size": 20 },
+            { "type": "audio-in", "tooltip": true, "tooltip-icon-size": 20 }
+        ]
+    },
+
+    // Silent unless a unit failed — including dots.service.
+    "systemd-failed-units": {
+        "format": "󰀦 {nr_failed}",
+        "format-ok": "",
+        "system": true,
+        "user": true,
+        "on-click": "kitty --hold -e sh -c 'systemctl --failed; systemctl --user --failed'"
+    },
+
+    // Silent unless notifications are paused.
+    "custom/dnd": {
+        "exec": "dots bar dnd",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 6,
+        "on-click": "dots dnd toggle"
+    },
+
+    // Silent unless hyprsunset is running.
+    "custom/night": {
+        "exec": "dots bar night",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 7,
+        "on-click": "dots night toggle"
+    },
+
+    // Silent unless the idle inhibitor is held; click it to release.
+    // Turning it *on* lives in `dots menu` → Idle & lock.
+    "idle_inhibitor": {
+        "format": "{icon}",
+        "format-icons": { "activated": "󰅶", "deactivated": "" },
+        "tooltip-format-activated": "Idle inhibited — the screen stays on",
+        "tooltip-format-deactivated": ""
+    },
+
+    // Silent unless `dots doctor` / `dots packages --audit` find something.
+    "custom/drift": {
+        "exec": "dots bar drift",
+        "return-type": "json",
+        "interval": 3600,
+        "signal": 9,
+        "on-click": "kitty --hold -e sh -c 'dots doctor; dots packages --audit'"
+    },
+
+    // Silent below the threshold in `dots bar updates`.
+    "custom/updates": {
+        "exec": "dots bar updates",
+        "return-type": "json",
+        "interval": 3600,
+        "signal": 10,
+        "on-click": "kitty --hold -e sh -c 'paru -Syu; pkill -RTMIN+10 waybar'"
+    },
+
+    // Silent while a wallpaper render isn't running.
+    "custom/wallpaper": {
+        "exec": "dots bar wallpaper",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 11,
+        "on-click": "dots wallpaper menu"
+    },
+
+    // Empty format => hidden until a state threshold is crossed.
+    "disk": {
+        "path": "/",
+        "interval": 300,
+        "states": { "warning": 85, "critical": 94 },
+        "format": "",
+        "format-warning": "󰋊 {percentage_used}%",
+        "format-critical": "󰋊 {percentage_used}%",
+        "tooltip-format": "{used} of {total} used on {path}"
+    },
+
+    // CPU temperature, silent below the threshold. A custom module because
+    // hwmon indices are not stable and thermal_zone0 is the wifi card here.
+    "custom/temp": {
+        "exec": "dots bar temp",
+        "return-type": "json",
+        "interval": 10,
+        "on-click": "kitty --hold -e btop"
+    },
 
     "tray": {
         "icon-size": 14,
-        "spacing": 6
+        "spacing": 8
     },
 
     "bluetooth": {
         "format": "󰂯",
-        "format-connected": "󰂱 {device_alias}",
+        "format-connected": "󰂱",
         "format-disabled": "󰂲",
-        "tooltip-format": "{controller_alias}\t{controller_address}\n\n{num_connections} connected",
-        "tooltip-format-connected": "{controller_alias}\t{controller_address}\n\n{num_connections} connected\n\n{device_enumerate}",
+        "format-off": "󰂲",
+        "tooltip-format": "{controller_alias}\n{status}",
+        "tooltip-format-connected": "{controller_alias}\n{num_connections} connected\n\n{device_enumerate}",
         "tooltip-format-enumerate-connected": "{device_alias}\t{device_address}",
-        "on-click": "blueman-manager"
+        "tooltip-format-enumerate-connected-battery": "{device_alias}\t{device_battery_percentage}%",
+        "on-click": "dots bluetooth"
     },
 
     "network": {
-        "format-wifi": "󰤨 {essid}",
+        "format-wifi": "󰤨",
         "format-ethernet": "󰈀",
+        "format-linked": "󰤯",
         "format-disconnected": "󰤭",
-        "tooltip-format": "{ifname} — {ipaddr}/{cidr}",
-        "tooltip-format-wifi": "{essid} ({signalStrength}%) — {ipaddr}",
-        "on-click": "nm-connection-editor"
+        "tooltip-format-wifi": "{essid}   {signalStrength}%\n{ipaddr}/{cidr}",
+        "tooltip-format-ethernet": "{ifname}\n{ipaddr}/{cidr}",
+        "tooltip-format-disconnected": "Disconnected",
+        "on-click": "dots wifi"
     },
 
     "pulseaudio": {
-        "format": "{icon} {volume}%",
-        "format-muted": "󰝟 muted",
+        "format": "{icon}",
+        "format-muted": "󰝟",
         "format-icons": {
+            "headphone": "󰋋",
+            "headset": "󰋎",
             "default": ["󰕿", "󰖀", "󰕾"]
         },
-        "on-click": "pavucontrol",
+        "tooltip-format": "{desc}   {volume}%",
+        "on-click": "dots audio",
+        "on-click-right": "wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle",
         "on-scroll-up": "wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 2%+",
         "on-scroll-down": "wpctl set-volume @DEFAULT_AUDIO_SINK@ 2%-"
     },
 
-    "custom/brightness": {
-        // Script reads from brightnessctl (laptop) or ddcutil (desktop)
-        // Populated at install time from machine profile
-        "exec": "~/.config/waybar/scripts/brightness.sh",
-        "interval": 5,
-        "format": "󰃞 {}%",
-        "on-scroll-up": "~/.config/waybar/scripts/brightness-up.sh",
-        "on-scroll-down": "~/.config/waybar/scripts/brightness-down.sh"
+    "pulseaudio/slider": {
+        "min": 0,
+        "max": 100,
+        "orientation": "horizontal"
+    },
+
+    // Desktop only: the only upower device with a battery here is the headset,
+    // so this is "are my headphones about to die". Hidden when there is none.
+    "upower": {
+        "format": "{percentage}",
+        "icon-size": 14,
+        "hide-if-empty": true,
+        "tooltip": true,
+        "tooltip-spacing": 12
+    },
+
+    // Laptop only. `battery` rather than `upower` because it has states, and
+    // states are what let the low-battery case colour itself.
+    "battery": {
+        "interval": 30,
+        "states": { "warning": 20, "critical": 10 },
+        "format": "{icon} {capacity}",
+        "format-charging": "󰂄 {capacity}",
+        "format-plugged": "󰚥 {capacity}",
+        "format-icons": ["󰁺", "󰁻", "󰁼", "󰁽", "󰁾", "󰁿", "󰂀", "󰂁", "󰂂", "󰁹"],
+        "tooltip-format": "{timeTo} — {power}W"
+    },
+
+    // Drawer handle. No exec — a static label that opens group/tools.
+    "custom/expand": {
+        "format": "󰅁",
+        "tooltip": false
     },
 
     "custom/power": {
         "format": "⏻",
-        "on-click": "wlogout",
-        "tooltip": false
+        "tooltip": false,
+        "on-click": "wlogout"
     }
 }
