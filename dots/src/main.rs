@@ -17,12 +17,13 @@ mod output;
 mod pickers;
 mod power;
 mod setup;
+mod splash;
 mod theme;
 mod wallpaper;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Command, MonitorCmd, ThemeCmd, WallpaperCmd};
+use cli::{Cli, Command, MonitorCmd, SplashCmd, ThemeCmd, WallpaperCmd};
 use config::{dotfiles_dir, load_machine, load_manifest};
 use std::io;
 use std::io::IsTerminal;
@@ -178,6 +179,11 @@ async fn run(cli: Cli) -> Result<()> {
             WallpaperCmd::List => wallpaper::list()?,
             WallpaperCmd::Menu => menu::wallpaper_menu()?,
             WallpaperCmd::Mode { mode } => wallpaper::set_mode(&mode)?,
+        },
+
+        Command::Splash { cmd } => match cmd {
+            SplashCmd::Apply => splash::apply()?,
+            SplashCmd::Preview { width, height } => splash::preview(width, height)?,
         },
 
         Command::Theme { cmd } => match cmd {

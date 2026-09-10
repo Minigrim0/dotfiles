@@ -137,6 +137,23 @@ hooks.post_install = [
     "sed 's|^Exec=/usr/bin/vlc|Exec=env QT_QPA_PLATFORMTHEME=qt5ct /usr/bin/vlc|' /usr/share/applications/vlc.desktop > $HOME/.local/share/applications/vlc.desktop",
 ]
 
+# Boot splash
+
+[modules.splash]
+enabled = true
+configs = "plymouth"
+# The plymouth hook is already in /etc/mkinitcpio.conf's HOOKS on this machine.
+# Note there is deliberately no plymouth-encrypt: current Arch folded plymouth
+# support into the stock `encrypt` hook, which pings plymouthd and calls
+# `plymouth ask-for-password` when it answers. The separate hook no longer
+# ships, and adding it to HOOKS would break the build.
+packages = ["plymouth"]
+# Not run automatically: installing the theme copies into /usr/share and
+# rebuilds the initramfs, which needs root and takes as long as mkinitcpio.
+# `dots doctor` reports when the installed copy has drifted from the rendered
+# one.
+hooks.post_install = ["echo 'run `dots splash apply` to install the boot splash'"]
+
 # Secrets
 
 [modules.secrets]

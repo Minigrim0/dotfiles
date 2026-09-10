@@ -70,6 +70,11 @@ pub enum Command {
     Keys,
     /// Toggle game mode (animations / blur / shadows off)
     Game,
+    /// Boot splash (plymouth): render the theme and rebuild the initramfs
+    Splash {
+        #[command(subcommand)]
+        cmd: SplashCmd,
+    },
     /// Run health checks
     Doctor,
     /// Clone a dotfiles repo to ~/.local/share/dots/repo and set it up
@@ -158,6 +163,23 @@ pub enum ThemeCmd {
     },
     /// Unpin: derive colors from the current wallpaper again
     Auto,
+}
+
+#[derive(Subcommand)]
+pub enum SplashCmd {
+    /// Draw the assets, install to /usr/share, rebuild the initramfs.
+    /// Needs sudo, and takes as long as mkinitcpio does.
+    Apply,
+    /// Compose a PNG mock of the splash without touching boot config.
+    /// The real thing is only observable by rebooting, so check here first.
+    Preview {
+        /// Screen width to mock (default: 2560)
+        #[arg(long, default_value_t = 2560)]
+        width: u32,
+        /// Screen height to mock (default: 1440)
+        #[arg(long, default_value_t = 1440)]
+        height: u32,
+    },
 }
 
 #[derive(Subcommand)]

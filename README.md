@@ -116,6 +116,46 @@ file, so a layout is committed to the machine it belongs to. `dots displays`
 (Super + Shift + M) is the same thing as a picker, and hands off to nwg-displays
 for drag-and-drop arrangement — the one job a list of menu items is bad at.
 
+## The boot splash
+
+Plymouth, themed from the same matugen palette as everything else: the logo
+composited at native size on black, with a pill entry field for the LUKS
+passphrase and a Caps Lock warning that only appears when it applies.
+
+```
+dots splash preview     # compose a PNG mock, no root, no reboot
+dots splash apply       # install to /usr/share and rebuild the initramfs
+```
+
+Two things make it unlike every other themed surface here.
+
+It cannot follow the wallpaper. mkinitcpio bakes a *copy* of the theme into the
+initramfs, so a new palette does not reach the boot screen until the theme is
+reinstalled and the initramfs rebuilt — root-owned, and as slow as mkinitcpio.
+That is why `dots splash apply` is explicit rather than something
+`wallpaper set` triggers, and why `preview` exists: the real thing is otherwise
+only observable by rebooting.
+
+The ground is black rather than the palette surface. The logo's outer ring is a
+flat near-black field, so black is what makes the square edgeless with no
+feathering at all — feathering it into a lighter surface tone leaves a dark
+halo, because the artwork's black is darker than any surface color matugen
+produces. The palette still drives the entry, the bullets and the text.
+
+Two boot-side prerequisites, neither managed by `dots`:
+
+- `splash` on the kernel cmdline. Without it plymouth is built into the
+  initramfs and then told to stay quiet, which looks exactly like a theme that
+  does not work. `dots doctor` reports it.
+- `plymouth` in `HOOKS`, before `encrypt`. Note there is deliberately no
+  `plymouth-encrypt`: current Arch folded plymouth support into the stock
+  `encrypt` hook, which pings plymouthd and calls `plymouth ask-for-password`
+  when it answers. The separate hook no longer ships, and adding it to `HOOKS`
+  breaks the build.
+
+If the splash ever comes up blank, Esc switches plymouth to its text view — the
+passphrase prompt is still there and still accepts input.
+
 ## Daily driving
 
 | Keys | Action |

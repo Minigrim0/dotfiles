@@ -409,6 +409,75 @@ fn parse_default_applications(text: &str) -> std::collections::HashMap<String, S
 }
 
 
+/// The boot splash. Every failure mode here looks identical from the desktop —
+/// you only find out by rebooting — so all four are worth naming separately.
+fn check_splash(home: &Path) {
+    heading("Boot splash");
+
+    // 1. Is plymouth even asked to draw? This is the one that silently costs
+    //    people an afternoon: plymouth installed, hooked and themed, and then
+    //    left out of the cmdline.
+    let cmdline = std::fs::read_to_string("/proc/cmdline").unwrap_or_default();
+    if cmdline.split_whitespace().any(|w| w == "splash") {
+        pass("kernel cmdline has `splash`");
+    } else {
+        fail("kernel cmdline has no `splash` — plymouth stays silent");
+        hint("add it to GRUB_CMDLINE_LINUX_DEFAULT, then `sudo grub-mkconfig -o /boot/grub/grub.cfg`");
+    }
+
+    // 2. The hook, and the trap next to it.
+    let hooks = std::fs::read_to_string("/etc/mkinitcpio.conf").unwrap_or_default();
+    let hooks_line = hooks
+        .lines()
+        .find(|l| l.trim_start().starts_with("HOOKS="))
+        .unwrap_or("");
+    if hooks_line.contains("plymouth-encrypt") {
+        fail("HOOKS uses plymouth-encrypt, which no longer ships");
+        hint("use the stock `encrypt` hook — it calls `plymouth ask-for-password` itself");
+    } else if hooks_line.split(|c: char| !c.is_alphanumeric() && c != '-')
+        .any(|h| h == "plymouth")
+    {
+        pass("mkinitcpio HOOKS includes plymouth");
+    } else {
+        fail("mkinitcpio HOOKS has no plymouth hook");
+    }
+
+    // 3. Is our theme the selected one?
+    let theme = cmd_stdout("plymouth-set-default-theme", &[]).trim().to_string();
+    if theme == "dots" {
+        pass("default theme is `dots`");
+    } else if theme.is_empty() {
+        fail("could not read the default plymouth theme");
+    } else {
+        fail(&format!("default theme is `{}`, not `dots`", theme));
+        hint("fix: dots splash apply");
+    }
+
+    // 4. Drift. The initramfs holds a copy, so the rendered theme and the
+    //    installed one part ways on the next `wallpaper set` — and nothing
+    //    else in the system will ever mention it.
+    let rendered = home.join(".config/plymouth/themes/dots/dots.script");
+    let installed = Path::new("/usr/share/plymouth/themes/dots/dots.script");
+    match (
+        std::fs::read_to_string(&rendered),
+        std::fs::read_to_string(installed),
+    ) {
+        (Ok(a), Ok(b)) if a == b => pass("installed theme matches the rendered one"),
+        (Ok(_), Ok(_)) => {
+            fail("installed theme has drifted from the rendered one");
+            hint("fix: dots splash apply   (reinstalls and rebuilds the initramfs)");
+        }
+        (Ok(_), Err(_)) => {
+            fail("theme rendered but never installed");
+            hint("fix: dots splash apply");
+        }
+        (Err(_), _) => {
+            fail("theme not rendered");
+            hint("fix: dots wallpaper set <name>, then dots splash apply");
+        }
+    }
+}
+
 pub fn run(manifest: &Manifest, dotfiles: &Path, home: &Path) -> Result<()> {
     check_symlinks(manifest, dotfiles, home);
     check_session();
@@ -418,6 +487,7 @@ pub fn run(manifest: &Manifest, dotfiles: &Path, home: &Path) -> Result<()> {
     check_qt(home);
     check_portals();
     check_defaults(home);
+    check_splash(home);
     check_gpu();
     check_journal_size();
     check_packages(manifest);

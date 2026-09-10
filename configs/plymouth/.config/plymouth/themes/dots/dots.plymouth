@@ -1,0 +1,18 @@
+# The splash theme. Paths point at /usr/share because that is where mkinitcpio's
+# plymouth hook reads them from — ~/.config/plymouth/themes/dots is the editable
+# copy, and `dots splash apply` is what installs it here and rebuilds the
+# initramfs. Editing the ~/.config copy alone changes nothing at boot.
+[Plymouth Theme]
+Name=dots
+Description=Full-bleed wallpaper with a matugen-themed passphrase card
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/dots
+ScriptFile=/usr/share/plymouth/themes/dots/dots.script
+ConsoleLogBackgroundColor=0x00000000
+# fc-match'd by the mkinitcpio hook and baked in as /usr/share/fonts/Plymouth.ttf.
+# Same family the bar and GTK use, so the splash is not the one screen in a
+# different typeface.
+Font=Adwaita Sans 16
+MonospaceFont=JetBrainsMono Nerd Font 14
