@@ -1,4 +1,4 @@
-use crate::{arrow, bar, ok, warn};
+use crate::{arrow, bar, display, ok, warn};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -260,25 +260,69 @@ fn brightnessctl_get() -> Option<u32> {
         .ok()
 }
 
+/// One table for both channels: geometry from Hyprland, brightness from DDC.
+///
+/// They used to be separate views of the same hardware, which meant reading two
+/// commands to answer "what is my second monitor doing". Outputs come from
+/// hyprctl because that is the list that is always complete — a laptop panel
+/// has no DDC bus at all, and a monitor Hyprland has disabled still exists.
 pub fn list(refresh: bool) -> Result<()> {
-    let displays = load_cache(refresh)?;
-    if displays.is_empty() {
-        warn!("No DDC displays found (try --refresh, or check i2c-dev / permissions)");
-        return Ok(());
-    }
+    let outputs = display::outputs()?;
+    // DDC is best-effort: no i2c, no ddcutil or no cache is a blank column,
+    // not an error. The geometry half is still worth printing.
+    let ddc = load_cache(refresh).unwrap_or_default();
+
     println!(
-        "\x1b[1m{:<4} {:<6} {:<18} {:<28} BRIGHTNESS\x1b[0m",
-        "N", "BUS", "CONNECTOR", "MODEL"
+        "\x1b[1m{:<12} {:<18} {:<10} {:<14} {:<7} {:<9} {:<10} BRIGHTNESS\x1b[0m",
+        "OUTPUT", "MODEL", "POSITION", "MODE", "SCALE", "ROTATION", "STATE"
     );
-    println!("{}", "─".repeat(72));
-    for d in &displays {
-        let brightness = get_vcp(d.bus, VCP_BRIGHTNESS)
+    println!("{}", "─".repeat(98));
+
+    for o in &outputs {
+        // ddcutil reports "card1-HDMI-A-1" where Hyprland says "HDMI-A-1".
+        let brightness = ddc
+            .iter()
+            .find(|d| d.connector.ends_with(&o.name))
+            .and_then(|d| get_vcp(d.bus, VCP_BRIGHTNESS).ok())
             .map(|(cur, max)| format!("{}/{}", cur, max))
-            .unwrap_or_else(|_| "?".into());
+            .unwrap_or_else(|| "—".into());
+
+        let model: String = o
+            .description
+            .split(" (")
+            .next()
+            .unwrap_or("")
+            .chars()
+            .take(18)
+            .collect();
+
+        let state = if o.disabled {
+            "\x1b[33mdisabled\x1b[0m"
+        } else if o.focused {
+            "\x1b[32mfocused\x1b[0m"
+        } else {
+            "active"
+        };
+        // The colour codes cost width the formatter cannot see, so pad the
+        // plain text and append the escapes around it.
+        let state_pad = if o.disabled || o.focused { 10 + 9 } else { 10 };
+
         println!(
-            "{:<4} {:<6} {:<18} {:<28} {}",
-            d.display, d.bus, d.connector, d.model, brightness
+            "{:<12} {:<18} {:<10} {:<14} {:<7} {:<9} {:<pad$} {}",
+            o.name,
+            model,
+            format!("{}x{}", o.x, o.y),
+            format!("{}x{}@{:.0}", o.width, o.height, o.refresh_rate),
+            format!("{:.2}", o.scale),
+            display::transform_label(o.transform),
+            state,
+            brightness,
+            pad = state_pad,
         );
+    }
+
+    if ddc.is_empty() {
+        warn!("No DDC displays cached — brightness column is blank (try --refresh)");
     }
     Ok(())
 }

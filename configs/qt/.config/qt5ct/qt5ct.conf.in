@@ -1,0 +1,34 @@
+# qt5ct — the Qt5 counterpart of qt6ct.conf.
+#
+# QT_QPA_PLATFORMTHEME holds exactly one value, and the plugin key differs per
+# Qt major version, so the session-wide setting (configs/uwsm/.config/uwsm/env)
+# is qt6ct and Qt5 apps ignore it. This file themes the ones launched with the
+# variable overridden — the `qt` module's post-install hook rewrites VLC's
+# desktop entry to do precisely that, since VLC 3 is the last Qt5 GUI in the
+# manifest.
+#
+# Rendered from this .in by the same hook, with @HOME@ expanded: qt5ct opens
+# color_scheme_path with QFile, which expands neither ~ nor $HOME.
+#
+# Palette and fonts as in qt6ct.conf: matugen and fontconfig respectively.
+
+[Appearance]
+custom_palette=true
+color_scheme_path=@HOME@/.config/qt5ct/colors/matugen.conf
+icon_theme=Adwaita
+standard_dialogs=gtk3
+# Fusion rather than Kvantum: a Kvantum theme needs a hand-drawn SVG, while
+# Fusion renders straight from the palette — which is the only part a wallpaper
+# can actually generate.
+style=Fusion
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3

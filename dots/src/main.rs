@@ -3,9 +3,11 @@ mod bar;
 mod cli;
 mod config;
 mod daemon;
+mod display;
 mod doctor;
 mod gamemode;
 mod hooks;
+mod inhibit;
 mod installer;
 mod keys;
 mod linker;
@@ -13,6 +15,7 @@ mod menu;
 mod monitor;
 mod output;
 mod pickers;
+mod power;
 mod setup;
 mod theme;
 mod wallpaper;
@@ -198,6 +201,48 @@ async fn run(cli: Cli) -> Result<()> {
                 all,
             } => monitor::contrast(&value, mon.as_deref(), all)?,
             MonitorCmd::Get => monitor::get()?,
+
+            MonitorCmd::Modes { monitor: mon } => display::modes(mon.as_deref())?,
+            MonitorCmd::Mode { mode, monitor: mon } => {
+                display::set_mode(mon.as_deref(), &mode)?
+            }
+            MonitorCmd::Scale { scale, monitor: mon } => {
+                display::set_scale(mon.as_deref(), scale)?
+            }
+            MonitorCmd::Position {
+                monitor: mon,
+                at,
+                right_of,
+                left_of,
+                above,
+                below,
+            } => {
+                let placement = if let Some(spec) = at {
+                    let (x, y) = display::parse_at(&spec)?;
+                    display::Placement::At(x, y)
+                } else if let Some(other) = right_of {
+                    display::Placement::RightOf(other)
+                } else if let Some(other) = left_of {
+                    display::Placement::LeftOf(other)
+                } else if let Some(other) = above {
+                    display::Placement::Above(other)
+                } else if let Some(other) = below {
+                    display::Placement::Below(other)
+                } else {
+                    anyhow::bail!(
+                        "no placement given — use --at XxY, --right-of, --left-of, \
+                         --above or --below"
+                    )
+                };
+                display::set_position(mon.as_deref(), &placement)?
+            }
+            MonitorCmd::Rotate { degrees, monitor: mon } => {
+                display::rotate(mon.as_deref(), degrees)?
+            }
+            MonitorCmd::Enable { monitor: mon } => display::set_enabled(&mon, true)?,
+            MonitorCmd::Disable { monitor: mon } => display::set_enabled(&mon, false)?,
+            MonitorCmd::Mirror { monitor: mon, onto } => display::mirror(&mon, &onto)?,
+            MonitorCmd::Save => display::save()?,
         },
 
         Command::Menu => menu::show()?,
@@ -207,6 +252,18 @@ async fn run(cli: Cli) -> Result<()> {
         Command::Audio => pickers::audio()?,
 
         Command::Bluetooth => pickers::bluetooth()?,
+
+        Command::Displays => display::menu()?,
+
+        // No argument opens the picker, `get` prints, anything else is a
+        // profile name — the same shape as `dots wallpaper`.
+        Command::Power { profile } => match profile.as_deref() {
+            None => power::menu()?,
+            Some("get") => power::get()?,
+            Some(name) => power::set(name)?,
+        },
+
+        Command::Inhibit { action } => inhibit::set(parse_action(&action)?)?,
 
         Command::Dnd { action } => menu::set_dnd(parse_action(&action)?)?,
 

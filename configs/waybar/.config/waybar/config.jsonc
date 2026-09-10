@@ -131,13 +131,27 @@
         "on-click": "dots night toggle"
     },
 
-    // Silent unless the idle inhibitor is held; click it to release.
-    // Turning it *on* lives in `dots menu` → Idle & lock.
-    "idle_inhibitor": {
-        "format": "{icon}",
-        "format-icons": { "activated": "󰅶", "deactivated": "" },
-        "tooltip-format-activated": "Idle inhibited — the screen stays on",
-        "tooltip-format-deactivated": ""
+    // Silent unless `dots inhibit` holds a lock; click it to release.
+    //
+    // Replaces waybar's built-in `idle_inhibitor`, which held a Wayland
+    // inhibitor that hypridle's suspend listener could not see and that died
+    // with the bar. `dots inhibit` takes a systemd lock instead, so the icon
+    // and the thing keeping the machine awake are the same object.
+    "custom/inhibit": {
+        "exec": "dots bar inhibit",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 13,
+        "on-click": "dots inhibit off"
+    },
+
+    // Silent while the power profile is balanced — see `dots bar power`.
+    "custom/power-profile": {
+        "exec": "dots bar power",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 12,
+        "on-click": "dots power"
     },
 
     // Silent unless `dots doctor` / `dots packages --audit` find something.

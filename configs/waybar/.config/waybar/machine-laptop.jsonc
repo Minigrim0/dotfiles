@@ -17,7 +17,8 @@
             "systemd-failed-units",
             "custom/dnd",
             "custom/night",
-            "idle_inhibitor",
+            "custom/inhibit",
+            "custom/power-profile",
             "custom/wallpaper",
             // --- silent until something is abnormal
             "custom/drift",

@@ -1,4 +1,4 @@
-use crate::{bar, gamemode, keys, monitor, theme, wallpaper};
+use crate::{bar, display, gamemode, inhibit, keys, monitor, power, theme, wallpaper};
 use anyhow::{Context, Result};
 use std::io::Write;
 use std::process::{Command, Stdio};
@@ -108,14 +108,6 @@ fn notify(body: &str) {
         .status();
 }
 
-fn is_running(name: &str) -> bool {
-    Command::new("pgrep")
-        .args(["-x", name])
-        .output()
-        .map(|o| o.status.success())
-        .unwrap_or(false)
-}
-
 fn spawn_detached(cmd: &str, args: &[&str]) -> Result<()> {
     Command::new(cmd)
         .args(args)
@@ -217,17 +209,6 @@ pub fn toggle_dnd() -> Result<()> {
     set_dnd(None)
 }
 
-fn toggle_idle() -> Result<()> {
-    if is_running("hypridle") {
-        let _ = Command::new("pkill").args(["-x", "hypridle"]).status();
-        notify("Idle inhibited — screen stays on");
-    } else {
-        spawn_detached("hypridle", &[])?;
-        notify("Idle management ON");
-    }
-    Ok(())
-}
-
 pub fn wallpaper_menu() -> Result<()> {
     let names = wallpaper::names()?;
     anyhow::ensure!(!names.is_empty(), "no wallpapers registered");
@@ -257,7 +238,10 @@ fn theme_menu() -> Result<()> {
     }
 }
 
-fn monitors_menu() -> Result<()> {
+/// DDC/CI brightness only. Geometry lives in `dots displays`, because a
+/// brightness step and a resolution change have nothing to do with each other
+/// beyond happening to the same panel.
+fn brightness_menu() -> Result<()> {
     let items = [("󰃚", "25%"), ("󰃝", "50%"), ("󰃟", "75%"), ("󰃠", "100%")];
     if let Some(choice) = wofi_grid("brightness", &items) {
         monitor::brightness(choice.trim_end_matches('%'), None, true)?;
@@ -270,25 +254,29 @@ pub fn show() -> Result<()> {
     let items = [
         ("󰸉", "Wallpaper"),
         ("󰔎", "Theme"),
-        ("󰍹", "Monitors"),
-        ("󰌾", "Idle & lock"),
+        ("󰍹", "Displays"),
+        ("󰃟", "Brightness"),
+        ("󰾅", "Power profile"),
+        ("󰅶", "Keep awake"),
         ("󰖔", "Night light"),
         ("󰂛", "Do not disturb"),
         ("󰊴", "Game mode"),
         ("󰌌", "Keybinds"),
-        ("⏻", "Power"),
+        ("⏻", "Session"),
     ];
 
     match wofi_grid("dots", &items).as_deref() {
         Some("Wallpaper") => wallpaper_menu(),
         Some("Theme") => theme_menu(),
-        Some("Monitors") => monitors_menu(),
-        Some("Idle & lock") => toggle_idle(),
+        Some("Displays") => display::menu(),
+        Some("Brightness") => brightness_menu(),
+        Some("Power profile") => power::menu(),
+        Some("Keep awake") => inhibit::set(None),
         Some("Night light") => toggle_night_light(),
         Some("Do not disturb") => toggle_dnd(),
         Some("Game mode") => gamemode::toggle(),
         Some("Keybinds") => keys::show(),
-        Some("Power") => spawn_detached("wlogout", &[]),
+        Some("Session") => spawn_detached("wlogout", &[]),
         _ => Ok(()),
     }
 }

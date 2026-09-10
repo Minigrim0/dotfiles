@@ -9,7 +9,7 @@
 //! "silent until it matters" is implemented.
 
 use crate::config::{dotfiles_dir, load_manifest};
-use crate::{audit, gamemode, menu, monitor, wallpaper};
+use crate::{audit, gamemode, inhibit, menu, monitor, power, wallpaper};
 use anyhow::Result;
 use serde::Serialize;
 use std::process::Command;
@@ -28,6 +28,8 @@ pub const SIG_DRIFT: u8 = 9;
 #[allow(dead_code)]
 pub const SIG_UPDATES: u8 = 10;
 pub const SIG_WALLPAPER: u8 = 11;
+pub const SIG_POWER: u8 = 12;
+pub const SIG_INHIBIT: u8 = 13;
 
 /// Tell waybar that one module's state changed.
 ///
@@ -94,8 +96,11 @@ pub fn emit(topic: &str) -> Result<()> {
         "updates" => updates(),
         "temp" => temp(),
         "wallpaper" => wallpaper_render(),
+        "power" => power_profile(),
+        "inhibit" => idle_inhibit(),
         other => anyhow::bail!(
-            "unknown bar topic '{}' (game, dnd, night, brightness, drift, updates, temp, wallpaper)",
+            "unknown bar topic '{}' (game, dnd, night, brightness, drift, updates, temp, \
+             wallpaper, power, inhibit)",
             other
         ),
     };
@@ -338,6 +343,42 @@ fn wallpaper_render() -> Status {
             "󰸉 rendering…",
             "Building palette and reloading apps",
             "busy",
+        )
+    } else {
+        Status::hidden()
+    }
+}
+
+/// Visible only while the power profile is *not* balanced. Balanced is the
+/// default on every machine that has the daemon at all, so showing it would be
+/// a permanent icon that means "nothing to see" — and a laptop silently left on
+/// performance is exactly the case worth an icon.
+fn power_profile() -> Status {
+    let Some(profile) = power::current() else {
+        return Status::hidden();
+    };
+    if profile == power::BALANCED {
+        return Status::hidden();
+    }
+    Status::new(
+        format!("{} {}", power::icon(&profile), profile),
+        format!("Power profile: {}\nClick to change", profile),
+        &profile,
+    )
+}
+
+/// Visible only while `dots inhibit` is holding a lock.
+///
+/// Distinct from waybar's own `idle_inhibitor` module, which holds a Wayland
+/// inhibitor that dies with the bar and cannot be seen by hypridle's suspend
+/// listener. This one reports the systemd lock, so what the bar shows and what
+/// actually stops the machine sleeping are the same thing.
+fn idle_inhibit() -> Status {
+    if inhibit::is_held() {
+        Status::new(
+            "󰅶",
+            "Screen stays on — idle, lock and suspend inhibited\nClick to release",
+            "on",
         )
     } else {
         Status::hidden()

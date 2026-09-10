@@ -40,6 +40,16 @@ pub enum Command {
     Audio,
     /// Bluetooth device picker — connect, disconnect, scan (wofi)
     Bluetooth,
+    /// Display picker — resolution, scale, rotation, arrangement (wofi)
+    Displays,
+    /// Power profile. No argument opens the picker; `get` prints the current
+    /// one; anything else is a profile name (performance, balanced, power-saver).
+    Power { profile: Option<String> },
+    /// Hold or release an idle inhibitor: toggle | on | off
+    Inhibit {
+        #[arg(default_value = "toggle")]
+        action: String,
+    },
     /// Pause or resume notifications: toggle | on | off
     Dnd {
         #[arg(default_value = "toggle")]
@@ -180,4 +190,62 @@ pub enum MonitorCmd {
     },
     /// Print the focused monitor's brightness (for waybar)
     Get,
+
+    // --- geometry, over hyprctl rather than DDC ---------------------------
+    /// List the modes an output advertises
+    Modes {
+        /// Connector name (default: the focused output)
+        monitor: Option<String>,
+    },
+    /// Set the mode: WIDTHxHEIGHT[@HZ], or preferred | highres | highrr
+    Mode {
+        mode: String,
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+    },
+    /// Set the fractional scale (0.5 - 3.0)
+    Scale {
+        scale: f64,
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+    },
+    /// Move an output. Exactly one placement flag is required.
+    Position {
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+        /// Absolute slot, as XxY (e.g. 1920x0)
+        #[arg(long, group = "placement")]
+        at: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        right_of: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        left_of: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        above: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        below: Option<String>,
+    },
+    /// Rotate an output: 0 | 90 | 180 | 270
+    Rotate {
+        degrees: u32,
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+    },
+    /// Turn an output on
+    Enable { monitor: String },
+    /// Turn an output off
+    Disable { monitor: String },
+    /// Mirror one output onto another
+    Mirror {
+        monitor: String,
+        /// The output to mirror *onto*
+        #[arg(long, short)]
+        onto: String,
+    },
+    /// Write the live layout to ~/.config/hypr/monitors.conf
+    Save,
 }

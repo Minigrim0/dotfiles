@@ -156,7 +156,8 @@ window#waybar {
 #custom-drift,
 #custom-updates,
 #custom-wallpaper,
-#idle_inhibitor,
+#custom-inhibit,
+#custom-power-profile,
 #disk,
 #custom-temp,
 #tray,
@@ -242,7 +243,17 @@ window#waybar {
     color: @warning;
 }
 
-#idle_inhibitor.activated {
+#custom-inhibit.on {
+    color: @accent;
+}
+
+/* The profile module is hidden while balanced, so these two are the only
+   states it is ever seen in — and they should not read the same. */
+#custom-power-profile.performance {
+    color: @warning;
+}
+
+#custom-power-profile.power-saver {
     color: @accent;
 }
 

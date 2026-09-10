@@ -21,7 +21,18 @@ packages = [
     "satty",
     "wl-clipboard",
     "cliphist",
+    # drag-and-drop monitor arrangement; `dots monitor` covers the rest
+    "nwg-displays",
 ]
+
+[modules.login]
+enabled = true
+# SDDM is the greeter; uwsm is what makes the session a real systemd session.
+# Picking "Hyprland (uwsm-managed)" at the greeter is what activates it —
+# see `dots doctor`, which reports which of the two you actually logged into.
+packages = ["sddm", "uwsm"]
+configs = "uwsm"
+hooks.post_install = ["sudo systemctl enable sddm"]
 
 [modules.bar]
 enabled = true
@@ -32,6 +43,7 @@ packages = ["waybar"]
 enabled = true
 configs = "wofi"
 packages = ["wofi"]
+aur_packages = ["wofi-emoji"]
 
 [modules.notifications]
 enabled = true
@@ -58,7 +70,7 @@ aur_packages = ["wlogout"]
 enabled = true
 configs = "matugen"
 packages = ["matugen", "ffmpeg"]
-aur_packages = ["awww-bin"]
+# aur_packages = ["awww-bin"]
 
 [modules.terminal]
 enabled = true
@@ -98,8 +110,49 @@ aur_packages = []
 [modules.theme]
 enabled = true
 configs = "gtk"
-packages = ["qt6ct", "kvantum", "adwaita-icon-theme"]
+packages = ["adwaita-icon-theme"]
 aur_packages = ["bibata-cursor-theme-bin"]
+
+# Qt
+
+[modules.qt]
+enabled = true
+configs = "qt"
+# qt6ct/qt5ct is the Qt equivalent of the GTK settings.ini: it points Qt apps
+# at a palette matugen regenerates with everything else. The style is Fusion
+# rather than Kvantum on purpose — Kvantum themes need a hand-drawn SVG, while
+# Fusion renders straight from the palette, which is the only part a wallpaper
+# can actually generate.
+packages = ["qt5ct", "qt6ct"]
+# Two jobs. First, expand @HOME@ in the .conf.in files: qt5ct/qt6ct read
+# color_scheme_path with QFile, which expands neither ~ nor $HOME, so the one
+# absolute path in the config cannot be committed. Second, override VLC's
+# desktop entry — VLC 3 is a Qt5 GUI, and QT_QPA_PLATFORMTHEME holds a single
+# value that Qt5 and Qt6 disagree about. Regenerated from the system entry each
+# run, so it follows VLC's own Exec line instead of pinning a stale copy.
+hooks.post_install = [
+    'sed "s|@HOME@|$HOME|g" $HOME/.config/qt6ct/qt6ct.conf.in > $HOME/.config/qt6ct/qt6ct.conf',
+    'sed "s|@HOME@|$HOME|g" $HOME/.config/qt5ct/qt5ct.conf.in > $HOME/.config/qt5ct/qt5ct.conf',
+    "mkdir -p $HOME/.local/share/applications",
+    "sed 's|^Exec=/usr/bin/vlc|Exec=env QT_QPA_PLATFORMTHEME=qt5ct /usr/bin/vlc|' /usr/share/applications/vlc.desktop > $HOME/.local/share/applications/vlc.desktop",
+]
+
+# Secrets
+
+[modules.secrets]
+enabled = true
+# gnome-keyring is the Secret Service every GTK/Electron app looks for:
+# Nextcloud, Signal, VS Code, and libsecret-backed ssh keys. pam_gnome_keyring
+# unlocks it with the login password — `dots doctor` checks that it is wired.
+packages = ["gnome-keyring", "libsecret", "seahorse"]
+
+# XDG: default applications and user directories
+
+[modules.xdg]
+enabled = true
+configs = "xdg"
+packages = ["xdg-utils", "xdg-user-dirs"]
+hooks.post_install = ["xdg-user-dirs-update"]
 
 # Audio / Bluetooth / Network
 
@@ -118,11 +171,38 @@ enabled = true
 packages = ["networkmanager", "network-manager-applet", "tailscale"]
 hooks.post_install = ["sudo systemctl enable --now NetworkManager"]
 
+# Printing
+
+[modules.printing]
+enabled = true
+packages = ["cups", "cups-pdf", "system-config-printer", "gutenprint"]
+hooks.post_install = ["sudo systemctl enable --now cups.socket"]
+
+# Power profiles
+
+[modules.power]
+enabled = true
+# Backs `dots power` and the bar's profile indicator, which is silent while
+# the profile is balanced.
+packages = ["power-profiles-daemon"]
+hooks.post_install = ["sudo systemctl enable --now power-profiles-daemon"]
+
 # Files & clipboard
 
 [modules.files]
 enabled = true
-packages = ["udiskie", "gvfs", "caja"]
+# Nautilus rather than caja (declared but never installed) or Dolphin.
+#
+# The deciding factor is the toolkit, not the feature list. KDE apps read
+# neither qt6ct's palette nor kdeglobals when Plasma is absent — verified by
+# setting kdeglobals' window background to pure red and watching Dolphin come
+# up grey anyway — so a KDE file manager would be the one window on the desktop
+# that never follows the wallpaper. Nautilus is GTK4/libadwaita, which the
+# existing gtk-colors.css template already themes.
+#
+# file-roller is GTK3, so it tracks the dark/light switch but not the accent.
+# Acceptable for something opened twice a month; Nautilus extracts inline.
+packages = ["udiskie", "gvfs", "nautilus", "file-roller"]
 
 # CLI tools
 
@@ -159,7 +239,7 @@ packages = [
     "python",
     "python-pip",
 ]
-aur_packages = ["visual-studio-code-bin"]
+# aur_packages = ["visual-studio-code-bin"]
 hooks.post_install = ["rustup default stable"]
 
 # Applications
@@ -171,6 +251,7 @@ packages = [
     "thunderbird",
     "nextcloud-client",
     "vlc",
+    "ristretto",
     "gimp",
     "signal-desktop",
 ]
