@@ -11,8 +11,7 @@
 //!   - dots.plymouth, logo.src.jpg   symlinked from the repo by `dots sync`
 //!   - dots.script, palette.conf     rendered by matugen
 //!   - logo/entry/bullet .png        drawn here, because plymouth's script
-//!                                   module composites images and cannot draw
-//!                                   a shape
+//!     module composites images and cannot draw a shape
 
 use crate::{arrow, head, ok, warn};
 use anyhow::{Context, Result};

@@ -27,11 +27,25 @@ jobs:
     if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
     timeout-minutes: 20
 
+    # paru pulls in alpm-sys, which links against libalpm — a pacman library
+    # that only exists on Arch. Build where the tool actually runs.
+    container:
+      image: archlinux:base-devel
+
     defaults:
       run:
         working-directory: dots
 
     steps:
+      # libalpm ships with pacman (already in the image); the rest cover the
+      # remaining -sys crates and the actions themselves (git for checkout,
+      # curl for rustup).
+      - name: Install system dependencies
+        # Runs before checkout, so the job-wide `dots` working directory
+        # does not exist yet.
+        working-directory: .
+        run: pacman -Syu --noconfirm --needed git curl pkgconf openssl gettext
+
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -73,6 +87,11 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     timeout-minutes: 30
 
+    # Same libalpm requirement as `check` — and the released binary is meant
+    # for Arch, so build it against Arch's own libraries.
+    container:
+      image: archlinux:base-devel
+
     permissions:
       contents: write   # required by softprops/action-gh-release to upload assets
 
@@ -81,6 +100,15 @@ jobs:
         working-directory: dots
 
     steps:
+      # libalpm ships with pacman (already in the image); the rest cover the
+      # remaining -sys crates and the actions themselves (git for checkout,
+      # curl for rustup).
+      - name: Install system dependencies
+        # Runs before checkout, so the job-wide `dots` working directory
+        # does not exist yet.
+        working-directory: .
+        run: pacman -Syu --noconfirm --needed git curl pkgconf openssl gettext
+
       - name: Checkout
         uses: actions/checkout@v4
 
