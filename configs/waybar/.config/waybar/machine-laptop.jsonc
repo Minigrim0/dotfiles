@@ -1,0 +1,59 @@
+{
+    // =======================================================================
+    // Laptop overrides — symlinked to ~/.config/waybar/machine.jsonc by
+    // `dots sync --machine laptop`, and pulled in by config.jsonc's "include".
+    //
+    // Only keys that config.jsonc does NOT define belong here: waybar resolves
+    // duplicates in favour of the including file.
+    // =======================================================================
+
+    "modules-right": ["group/right"],
+
+    "group/right": {
+        "orientation": "inherit",
+        "modules": [
+            // --- silent until something is true
+            "privacy",
+            "systemd-failed-units",
+            "custom/dnd",
+            "custom/night",
+            "custom/inhibit",
+            "custom/power-profile",
+            "custom/wallpaper",
+            // --- silent until something is abnormal
+            "custom/drift",
+            "custom/updates",
+            "disk",
+            "custom/temp",
+            // --- always
+            "tray",
+            "battery",
+            "bluetooth",
+            "network",
+            "pulseaudio",
+            "group/tools"
+        ]
+    },
+
+    "group/tools": {
+        "orientation": "inherit",
+        "drawer": {
+            "transition-duration": 320,
+            "children-class": "tool",
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "custom/expand",
+            "pulseaudio/slider",
+            "backlight/slider",
+            "custom/power"
+        ]
+    },
+
+    // A real backlight device, so a real slider.
+    "backlight/slider": {
+        "min": 5,
+        "max": 100,
+        "orientation": "horizontal"
+    }
+}

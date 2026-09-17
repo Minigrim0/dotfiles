@@ -1,0 +1,84 @@
+# Default applications.
+#
+# This file is the reason `xdg-open` is predictable. It was previously written
+# only by whatever app last showed an "Open with" dialog, which is how it ended
+# up pointing at ristretto-4.desktop and vlc-8.desktop — indexed names GNOME
+# invents and nothing ever provides.
+#
+# Every entry below names a desktop file that actually exists. Adding an app
+# means adding it here too, not clicking "always use this".
+
+[Default Applications]
+
+# --- Web ------------------------------------------------------------------
+text/html=firefox.desktop
+application/xhtml+xml=firefox.desktop
+application/x-extension-htm=firefox.desktop
+application/x-extension-html=firefox.desktop
+application/x-extension-shtml=firefox.desktop
+application/x-extension-xht=firefox.desktop
+application/x-extension-xhtml=firefox.desktop
+x-scheme-handler/http=firefox.desktop
+x-scheme-handler/https=firefox.desktop
+x-scheme-handler/chrome=firefox.desktop
+x-scheme-handler/about=firefox.desktop
+x-scheme-handler/unknown=firefox.desktop
+
+# --- Documents ------------------------------------------------------------
+# Firefox's pdf.js rather than a dedicated reader: it is already installed,
+# already themed, and already what a PDF link opens in.
+application/pdf=firefox.desktop
+
+# --- Mail -----------------------------------------------------------------
+x-scheme-handler/mailto=org.mozilla.Thunderbird.desktop
+x-scheme-handler/mid=org.mozilla.Thunderbird.desktop
+message/rfc822=org.mozilla.Thunderbird.desktop
+application/x-extension-eml=org.mozilla.Thunderbird.desktop
+
+# --- Images ---------------------------------------------------------------
+image/jpeg=org.xfce.ristretto.desktop
+image/png=org.xfce.ristretto.desktop
+image/gif=org.xfce.ristretto.desktop
+image/webp=org.xfce.ristretto.desktop
+image/bmp=org.xfce.ristretto.desktop
+image/tiff=org.xfce.ristretto.desktop
+image/svg+xml=firefox.desktop
+
+# --- Audio / video --------------------------------------------------------
+audio/mpeg=vlc.desktop
+audio/flac=vlc.desktop
+audio/ogg=vlc.desktop
+audio/x-wav=vlc.desktop
+audio/mp4=vlc.desktop
+video/mp4=vlc.desktop
+video/x-matroska=vlc.desktop
+video/webm=vlc.desktop
+video/quicktime=vlc.desktop
+video/x-msvideo=vlc.desktop
+video/mpeg=vlc.desktop
+
+# --- Files and archives ---------------------------------------------------
+inode/directory=org.gnome.Nautilus.desktop
+application/zip=org.gnome.FileRoller.desktop
+application/x-tar=org.gnome.FileRoller.desktop
+application/gzip=org.gnome.FileRoller.desktop
+application/x-xz=org.gnome.FileRoller.desktop
+application/x-7z-compressed=org.gnome.FileRoller.desktop
+application/vnd.rar=org.gnome.FileRoller.desktop
+
+# --- Text and code --------------------------------------------------------
+text/plain=dev.zed.Zed.desktop
+text/markdown=dev.zed.Zed.desktop
+text/x-csrc=dev.zed.Zed.desktop
+text/x-python=dev.zed.Zed.desktop
+application/json=dev.zed.Zed.desktop
+application/toml=dev.zed.Zed.desktop
+text/x-shellscript=dev.zed.Zed.desktop
+
+# --- Application-owned schemes --------------------------------------------
+x-scheme-handler/sgnl=signal.desktop
+x-scheme-handler/signalcaptcha=signal.desktop
+x-scheme-handler/slack=slack.desktop
+x-scheme-handler/claude-cli=claude-code-url-handler.desktop
+x-scheme-handler/vscode=code-url-handler.desktop
+x-scheme-handler/terminal=kitty.desktop

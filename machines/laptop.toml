@@ -15,6 +15,5 @@ static_on_battery = true
 brightness_up   = "brightnessctl -e4 -n2 set 5%+"
 brightness_down = "brightnessctl -e4 -n2 set 5%-"
 
-[waybar]
-# Show battery module on laptop
-extra_modules_right = ["battery"]
+# The bar's module list lives in configs/waybar/.config/waybar/machine-laptop.jsonc,
+# symlinked to ~/.config/waybar/machine.jsonc and `include`d by config.jsonc.

@@ -34,10 +34,47 @@ pub enum Command {
     },
     /// Settings hub (wofi menu)
     Menu,
+    /// Wi-Fi picker — connect, rescan, toggle the radio (wofi)
+    Wifi,
+    /// Audio output / input picker, moving live streams too (wofi)
+    Audio,
+    /// Bluetooth device picker — connect, disconnect, scan (wofi)
+    Bluetooth,
+    /// Display picker — resolution, scale, rotation, arrangement (wofi)
+    Displays,
+    /// Power profile. No argument opens the picker; `get` prints the current
+    /// one; anything else is a profile name (performance, balanced, power-saver).
+    Power { profile: Option<String> },
+    /// Hold or release an idle inhibitor: toggle | on | off
+    Inhibit {
+        #[arg(default_value = "toggle")]
+        action: String,
+    },
+    /// Pause or resume notifications: toggle | on | off
+    Dnd {
+        #[arg(default_value = "toggle")]
+        action: String,
+    },
+    /// Night light (hyprsunset): toggle | on | off
+    Night {
+        #[arg(default_value = "toggle")]
+        action: String,
+    },
+    /// Print one waybar custom module's JSON and exit.
+    ///
+    /// Topics: game, dnd, night, brightness, drift, updates, wallpaper.
+    /// Modules run "interval": "once" with a signal, so nothing polls — the
+    /// dots command that changes the state raises it.
+    Bar { topic: String },
     /// Keybind cheatsheet overlay (wofi)
     Keys,
     /// Toggle game mode (animations / blur / shadows off)
     Game,
+    /// Boot splash (plymouth): render the theme and rebuild the initramfs
+    Splash {
+        #[command(subcommand)]
+        cmd: SplashCmd,
+    },
     /// Run health checks
     Doctor,
     /// Clone a dotfiles repo to ~/.local/share/dots/repo and set it up
@@ -129,6 +166,23 @@ pub enum ThemeCmd {
 }
 
 #[derive(Subcommand)]
+pub enum SplashCmd {
+    /// Draw the assets, install to /usr/share, rebuild the initramfs.
+    /// Needs sudo, and takes as long as mkinitcpio does.
+    Apply,
+    /// Compose a PNG mock of the splash without touching boot config.
+    /// The real thing is only observable by rebooting, so check here first.
+    Preview {
+        /// Screen width to mock (default: 2560)
+        #[arg(long, default_value_t = 2560)]
+        width: u32,
+        /// Screen height to mock (default: 1440)
+        #[arg(long, default_value_t = 1440)]
+        height: u32,
+    },
+}
+
+#[derive(Subcommand)]
 pub enum MonitorCmd {
     /// List detected displays and their brightness
     List {
@@ -158,4 +212,62 @@ pub enum MonitorCmd {
     },
     /// Print the focused monitor's brightness (for waybar)
     Get,
+
+    // --- geometry, over hyprctl rather than DDC ---------------------------
+    /// List the modes an output advertises
+    Modes {
+        /// Connector name (default: the focused output)
+        monitor: Option<String>,
+    },
+    /// Set the mode: WIDTHxHEIGHT[@HZ], or preferred | highres | highrr
+    Mode {
+        mode: String,
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+    },
+    /// Set the fractional scale (0.5 - 3.0)
+    Scale {
+        scale: f64,
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+    },
+    /// Move an output. Exactly one placement flag is required.
+    Position {
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+        /// Absolute slot, as XxY (e.g. 1920x0)
+        #[arg(long, group = "placement")]
+        at: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        right_of: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        left_of: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        above: Option<String>,
+        #[arg(long, group = "placement", value_name = "OTHER")]
+        below: Option<String>,
+    },
+    /// Rotate an output: 0 | 90 | 180 | 270
+    Rotate {
+        degrees: u32,
+        /// Connector name (default: the focused output)
+        #[arg(long, short)]
+        monitor: Option<String>,
+    },
+    /// Turn an output on
+    Enable { monitor: String },
+    /// Turn an output off
+    Disable { monitor: String },
+    /// Mirror one output onto another
+    Mirror {
+        monitor: String,
+        /// The output to mirror *onto*
+        #[arg(long, short)]
+        onto: String,
+    },
+    /// Write the live layout to ~/.config/hypr/monitors.conf
+    Save,
 }

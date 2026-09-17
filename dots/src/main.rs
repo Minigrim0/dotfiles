@@ -1,23 +1,29 @@
 mod audit;
+mod bar;
 mod cli;
 mod config;
 mod daemon;
+mod display;
 mod doctor;
 mod gamemode;
 mod hooks;
+mod inhibit;
 mod installer;
 mod keys;
 mod linker;
 mod menu;
 mod monitor;
 mod output;
+mod pickers;
+mod power;
 mod setup;
+mod splash;
 mod theme;
 mod wallpaper;
 
 use anyhow::Result;
 use clap::Parser;
-use cli::{Cli, Command, MonitorCmd, ThemeCmd, WallpaperCmd};
+use cli::{Cli, Command, MonitorCmd, SplashCmd, ThemeCmd, WallpaperCmd};
 use config::{dotfiles_dir, load_machine, load_manifest};
 use std::io;
 use std::io::IsTerminal;
@@ -85,6 +91,9 @@ async fn run(cli: Cli) -> Result<()> {
                 head!("Applying machine symlinks for '{}'", machine_name);
                 linker::apply_machine_symlinks(&dotfiles, &mc, &home)?;
             }
+
+            // Symlinks just changed, so the bar's drift indicator is stale.
+            bar::refresh(bar::SIG_DRIFT);
         }
 
         Command::Install(args) => {
@@ -142,6 +151,9 @@ async fn run(cli: Cli) -> Result<()> {
                 head!("Extra packages for '{}'", machine_name);
                 installer::install_extra(&mc.packages.extra).await?;
             }
+
+            // Packages just changed, so the bar's drift indicator is stale.
+            bar::refresh(bar::SIG_DRIFT);
         }
 
         Command::Status => {
@@ -169,6 +181,11 @@ async fn run(cli: Cli) -> Result<()> {
             WallpaperCmd::Mode { mode } => wallpaper::set_mode(&mode)?,
         },
 
+        Command::Splash { cmd } => match cmd {
+            SplashCmd::Apply => splash::apply()?,
+            SplashCmd::Preview { width, height } => splash::preview(width, height)?,
+        },
+
         Command::Theme { cmd } => match cmd {
             ThemeCmd::Dark => theme::set(true)?,
             ThemeCmd::Light => theme::set(false)?,
@@ -190,9 +207,75 @@ async fn run(cli: Cli) -> Result<()> {
                 all,
             } => monitor::contrast(&value, mon.as_deref(), all)?,
             MonitorCmd::Get => monitor::get()?,
+
+            MonitorCmd::Modes { monitor: mon } => display::modes(mon.as_deref())?,
+            MonitorCmd::Mode { mode, monitor: mon } => display::set_mode(mon.as_deref(), &mode)?,
+            MonitorCmd::Scale {
+                scale,
+                monitor: mon,
+            } => display::set_scale(mon.as_deref(), scale)?,
+            MonitorCmd::Position {
+                monitor: mon,
+                at,
+                right_of,
+                left_of,
+                above,
+                below,
+            } => {
+                let placement = if let Some(spec) = at {
+                    let (x, y) = display::parse_at(&spec)?;
+                    display::Placement::At(x, y)
+                } else if let Some(other) = right_of {
+                    display::Placement::RightOf(other)
+                } else if let Some(other) = left_of {
+                    display::Placement::LeftOf(other)
+                } else if let Some(other) = above {
+                    display::Placement::Above(other)
+                } else if let Some(other) = below {
+                    display::Placement::Below(other)
+                } else {
+                    anyhow::bail!(
+                        "no placement given — use --at XxY, --right-of, --left-of, \
+                         --above or --below"
+                    )
+                };
+                display::set_position(mon.as_deref(), &placement)?
+            }
+            MonitorCmd::Rotate {
+                degrees,
+                monitor: mon,
+            } => display::rotate(mon.as_deref(), degrees)?,
+            MonitorCmd::Enable { monitor: mon } => display::set_enabled(&mon, true)?,
+            MonitorCmd::Disable { monitor: mon } => display::set_enabled(&mon, false)?,
+            MonitorCmd::Mirror { monitor: mon, onto } => display::mirror(&mon, &onto)?,
+            MonitorCmd::Save => display::save()?,
         },
 
         Command::Menu => menu::show()?,
+
+        Command::Wifi => pickers::wifi()?,
+
+        Command::Audio => pickers::audio()?,
+
+        Command::Bluetooth => pickers::bluetooth()?,
+
+        Command::Displays => display::menu()?,
+
+        // No argument opens the picker, `get` prints, anything else is a
+        // profile name — the same shape as `dots wallpaper`.
+        Command::Power { profile } => match profile.as_deref() {
+            None => power::menu()?,
+            Some("get") => power::get()?,
+            Some(name) => power::set(name)?,
+        },
+
+        Command::Inhibit { action } => inhibit::set(parse_action(&action)?)?,
+
+        Command::Dnd { action } => menu::set_dnd(parse_action(&action)?)?,
+
+        Command::Night { action } => menu::set_night_light(parse_action(&action)?)?,
+
+        Command::Bar { topic } => bar::emit(&topic)?,
 
         Command::Keys => keys::show()?,
 
@@ -219,6 +302,16 @@ async fn run(cli: Cli) -> Result<()> {
     }
 
     Ok(())
+}
+
+/// `toggle` | `on` | `off` → None | Some(true) | Some(false)
+fn parse_action(action: &str) -> Result<Option<bool>> {
+    match action {
+        "toggle" => Ok(None),
+        "on" => Ok(Some(true)),
+        "off" => Ok(Some(false)),
+        other => anyhow::bail!("expected toggle, on or off — got '{}'", other),
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,35 @@
+# qt6ct — the Qt half of configs/gtk/settings.ini.
+#
+# Rendered to qt6ct.conf by the `qt` module's post-install hook, with @HOME@
+# expanded. That indirection exists for exactly one line: qt6ct opens
+# color_scheme_path with QFile, which expands neither ~ nor $HOME, and an
+# absolute path with a username in it is the one thing that cannot be
+# committed. Everything else here is verbatim.
+#
+# The palette is matugen's, regenerated with every other surface — see
+# configs/matugen/templates/qt-colors.conf.
+#
+# No [Fonts] section on purpose: fontconfig (configs/fonts/.config/fontconfig)
+# already names the three faces, and Qt reads fontconfig natively. Setting them
+# here too would be a second place to forget.
+
+[Appearance]
+custom_palette=true
+color_scheme_path=@HOME@/.config/qt6ct/colors/matugen.conf
+icon_theme=Adwaita
+standard_dialogs=gtk3
+# Fusion rather than Kvantum: a Kvantum theme needs a hand-drawn SVG, while
+# Fusion renders straight from the palette — which is the only part a wallpaper
+# can actually generate.
+style=Fusion
+
+[Interface]
+activate_item_on_single_click=1
+buttonbox_layout=0
+cursor_flash_time=1000
+dialog_buttons_have_icons=1
+menus_have_icons=true
+show_shortcuts_in_context_menus=true
+toolbutton_style=4
+underline_shortcut=1
+wheel_scroll_lines=3

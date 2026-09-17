@@ -7,5 +7,13 @@
 @define-color on_accent       {{colors.on_primary.default.hex}};
 @define-color text            {{colors.on_background.default.hex}};
 @define-color on_surface      {{colors.on_surface.default.hex}};
+
+/* Muted foreground for icons that are present but idle. */
+@define-color dim             {{colors.outline.default.hex}};
+
+/* `error` is the container (a fill); `error_text` is the readable foreground.
+   Using the container as a text colour is why disconnected states used to be
+   near-invisible on a dark ground. */
 @define-color error           {{colors.error_container.default.hex}};
+@define-color error_text      {{colors.error.default.hex}};
 @define-color warning         {{colors.tertiary.default.hex}};

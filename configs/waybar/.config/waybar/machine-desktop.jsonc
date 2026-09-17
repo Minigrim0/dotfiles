@@ -1,0 +1,64 @@
+{
+    // =======================================================================
+    // Desktop overrides — symlinked to ~/.config/waybar/machine.jsonc by
+    // `dots sync --machine desktop`, and pulled in by config.jsonc's "include".
+    //
+    // Only keys that config.jsonc does NOT define belong here: waybar resolves
+    // duplicates in favour of the including file.
+    // =======================================================================
+
+    "modules-right": ["group/right"],
+
+    "group/right": {
+        "orientation": "inherit",
+        "modules": [
+            // --- silent until something is true
+            "privacy",
+            "systemd-failed-units",
+            "custom/dnd",
+            "custom/night",
+            "custom/inhibit",
+            "custom/power-profile",
+            "custom/wallpaper",
+            // --- silent until something is abnormal
+            "custom/drift",
+            "custom/updates",
+            "disk",
+            "custom/temp",
+            // --- always
+            "tray",
+            "bluetooth",
+            "network",
+            "pulseaudio",
+            "group/tools"
+        ]
+    },
+
+    "group/tools": {
+        "orientation": "inherit",
+        "drawer": {
+            "transition-duration": 320,
+            "children-class": "tool",
+            "transition-left-to-right": false
+        },
+        "modules": [
+            "custom/expand",
+            "pulseaudio/slider",
+            "custom/brightness",
+            "upower",
+            "custom/power"
+        ]
+    },
+
+    // DDC/CI over the display cable. No slider: this is not a backlight device.
+    // Signal-driven — `dots monitor brightness` raises SIGRTMIN+8 when it
+    // changes the value, so nothing polls the i2c bus.
+    "custom/brightness": {
+        "exec": "dots bar brightness",
+        "return-type": "json",
+        "interval": "once",
+        "signal": 8,
+        "on-scroll-up": "dots monitor brightness +5",
+        "on-scroll-down": "dots monitor brightness -5"
+    }
+}

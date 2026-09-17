@@ -13,6 +13,7 @@ mod state;
 use dir::wallpaper_dir;
 use helpers::extract_frame;
 pub use helpers::{print_apply_summary, reload_apps};
+pub use state::is_rendering;
 pub use state::{load_state, save_state};
 
 use crate::wallpaper::helpers::to_still_path;
@@ -73,6 +74,9 @@ pub fn register(path: &Path, name: Option<&str>, fps: u32) -> Result<()> {
 
 /// Apply a registered wallpaper by name. Resolves to any file with that stem.
 pub fn set(name: &str) -> Result<()> {
+    // Shows "rendering…" on the bar until this returns, however it returns.
+    let _render = state::RenderGuard::start();
+
     let wdir = wallpaper_dir();
     let mut state = load_state();
 

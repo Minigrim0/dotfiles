@@ -1,4 +1,4 @@
-use crate::{arrow, ok, warn};
+use crate::{arrow, bar, display, ok, warn};
 use anyhow::{Context, Result};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -260,25 +260,69 @@ fn brightnessctl_get() -> Option<u32> {
         .ok()
 }
 
+/// One table for both channels: geometry from Hyprland, brightness from DDC.
+///
+/// They used to be separate views of the same hardware, which meant reading two
+/// commands to answer "what is my second monitor doing". Outputs come from
+/// hyprctl because that is the list that is always complete — a laptop panel
+/// has no DDC bus at all, and a monitor Hyprland has disabled still exists.
 pub fn list(refresh: bool) -> Result<()> {
-    let displays = load_cache(refresh)?;
-    if displays.is_empty() {
-        warn!("No DDC displays found (try --refresh, or check i2c-dev / permissions)");
-        return Ok(());
-    }
+    let outputs = display::outputs()?;
+    // DDC is best-effort: no i2c, no ddcutil or no cache is a blank column,
+    // not an error. The geometry half is still worth printing.
+    let ddc = load_cache(refresh).unwrap_or_default();
+
     println!(
-        "\x1b[1m{:<4} {:<6} {:<18} {:<28} BRIGHTNESS\x1b[0m",
-        "N", "BUS", "CONNECTOR", "MODEL"
+        "\x1b[1m{:<12} {:<18} {:<10} {:<14} {:<7} {:<9} {:<10} BRIGHTNESS\x1b[0m",
+        "OUTPUT", "MODEL", "POSITION", "MODE", "SCALE", "ROTATION", "STATE"
     );
-    println!("{}", "─".repeat(72));
-    for d in &displays {
-        let brightness = get_vcp(d.bus, VCP_BRIGHTNESS)
+    println!("{}", "─".repeat(98));
+
+    for o in &outputs {
+        // ddcutil reports "card1-HDMI-A-1" where Hyprland says "HDMI-A-1".
+        let brightness = ddc
+            .iter()
+            .find(|d| d.connector.ends_with(&o.name))
+            .and_then(|d| get_vcp(d.bus, VCP_BRIGHTNESS).ok())
             .map(|(cur, max)| format!("{}/{}", cur, max))
-            .unwrap_or_else(|_| "?".into());
+            .unwrap_or_else(|| "—".into());
+
+        let model: String = o
+            .description
+            .split(" (")
+            .next()
+            .unwrap_or("")
+            .chars()
+            .take(18)
+            .collect();
+
+        let state = if o.disabled {
+            "\x1b[33mdisabled\x1b[0m"
+        } else if o.focused {
+            "\x1b[32mfocused\x1b[0m"
+        } else {
+            "active"
+        };
+        // The colour codes cost width the formatter cannot see, so pad the
+        // plain text and append the escapes around it.
+        let state_pad = if o.disabled || o.focused { 10 + 9 } else { 10 };
+
         println!(
-            "{:<4} {:<6} {:<18} {:<28} {}",
-            d.display, d.bus, d.connector, d.model, brightness
+            "{:<12} {:<18} {:<10} {:<14} {:<7} {:<9} {:<pad$} {}",
+            o.name,
+            model,
+            format!("{}x{}", o.x, o.y),
+            format!("{}x{}@{:.0}", o.width, o.height, o.refresh_rate),
+            format!("{:.2}", o.scale),
+            display::transform_label(o.transform),
+            state,
+            brightness,
+            pad = state_pad,
         );
+    }
+
+    if ddc.is_empty() {
+        warn!("No DDC displays cached — brightness column is blank (try --refresh)");
     }
     Ok(())
 }
@@ -312,30 +356,33 @@ fn apply(code: &str, label: &str, value: &str, monitor: Option<&str>, all: bool)
 }
 
 pub fn brightness(value: &str, monitor: Option<&str>, all: bool) -> Result<()> {
-    apply(VCP_BRIGHTNESS, "Brightness", value, monitor, all)
+    apply(VCP_BRIGHTNESS, "Brightness", value, monitor, all)?;
+    // The bar's brightness module is `interval: once` + signal, so this is the
+    // only thing that makes it update — and why nothing polls the i2c bus.
+    bar::refresh(bar::SIG_BRIGHTNESS);
+    Ok(())
 }
 
 pub fn contrast(value: &str, monitor: Option<&str>, all: bool) -> Result<()> {
     apply(VCP_CONTRAST, "Contrast", value, monitor, all)
 }
 
-/// Print focused monitor's brightness as a bare number (waybar-friendly).
-/// Polled on an interval — never fails hard, prints nothing when DDC is
-/// momentarily unreadable so the bar shows a blank instead of an error toast.
-pub fn get() -> Result<()> {
-    let Ok(displays) = load_cache(false) else {
-        return Ok(());
-    };
+/// The focused monitor's brightness, or None when DDC is momentarily
+/// unreadable. Never fails hard: a blank bar beats an error toast.
+pub fn current_percent() -> Option<u32> {
+    let displays = load_cache(false).ok()?;
     if displays.is_empty() {
-        if let Some(pct) = brightnessctl_get() {
-            println!("{}", pct);
-        }
-        return Ok(());
+        return brightnessctl_get();
     }
-    if let Some(d) = targets(&displays, None, false).first()
-        && let Ok((cur, _)) = get_vcp(d.bus, VCP_BRIGHTNESS)
-    {
-        println!("{}", cur);
+    let focused = targets(&displays, None, false);
+    let d = focused.first()?;
+    get_vcp(d.bus, VCP_BRIGHTNESS).ok().map(|(cur, _)| cur)
+}
+
+/// Print it as a bare number, for anything that wants it on stdout.
+pub fn get() -> Result<()> {
+    if let Some(pct) = current_percent() {
+        println!("{}", pct);
     }
     Ok(())
 }
