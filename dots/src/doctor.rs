@@ -208,7 +208,12 @@ fn check_session() {
     heading("Session");
 
     let uwsm_active = Command::new("systemctl")
-        .args(["--user", "is-active", "--quiet", "wayland-wm@hyprland.service"])
+        .args([
+            "--user",
+            "is-active",
+            "--quiet",
+            "wayland-wm@hyprland.service",
+        ])
         .status()
         .map(|s| s.success())
         .unwrap_or(false);
@@ -234,7 +239,10 @@ fn check_session() {
     // Proves configs/uwsm/.config/uwsm/env was actually sourced.
     match std::env::var("QT_QPA_PLATFORMTHEME") {
         Ok(v) if v == "qt6ct" => pass("session environment loaded (QT_QPA_PLATFORMTHEME=qt6ct)"),
-        Ok(v) => fail(&format!("QT_QPA_PLATFORMTHEME is '{}', expected 'qt6ct'", v)),
+        Ok(v) => fail(&format!(
+            "QT_QPA_PLATFORMTHEME is '{}', expected 'qt6ct'",
+            v
+        )),
         Err(_) => {
             fail("QT_QPA_PLATFORMTHEME unset — uwsm env not loaded");
             hint("it lives in configs/uwsm/.config/uwsm/env; a non-uwsm session skips it");
@@ -333,7 +341,10 @@ fn check_portals() {
         } else {
             // Portals are D-Bus activated, so "inactive" only means nothing has
             // asked yet. Worth reporting, not worth calling broken.
-            hint(&format!("{} inactive (D-Bus activated on first use)", label));
+            hint(&format!(
+                "{} inactive (D-Bus activated on first use)",
+                label
+            ));
         }
     }
 }
@@ -376,7 +387,10 @@ fn check_defaults(home: &Path) {
         match want {
             Some(want) if want != resolved => {
                 fail(&format!("{:<10} → {} (declared {})", label, resolved, want));
-                hint(&format!("{} is probably not installed — fix: dots install", want));
+                hint(&format!(
+                    "{} is probably not installed — fix: dots install",
+                    want
+                ));
             }
             _ => pass(&format!("{:<10} → {}", label, resolved)),
         }
@@ -408,7 +422,6 @@ fn parse_default_applications(text: &str) -> std::collections::HashMap<String, S
     map
 }
 
-
 /// The boot splash. Every failure mode here looks identical from the desktop —
 /// you only find out by rebooting — so all four are worth naming separately.
 fn check_splash(home: &Path) {
@@ -422,7 +435,9 @@ fn check_splash(home: &Path) {
         pass("kernel cmdline has `splash`");
     } else {
         fail("kernel cmdline has no `splash` — plymouth stays silent");
-        hint("add it to GRUB_CMDLINE_LINUX_DEFAULT, then `sudo grub-mkconfig -o /boot/grub/grub.cfg`");
+        hint(
+            "add it to GRUB_CMDLINE_LINUX_DEFAULT, then `sudo grub-mkconfig -o /boot/grub/grub.cfg`",
+        );
     }
 
     // 2. The hook, and the trap next to it.
@@ -434,7 +449,8 @@ fn check_splash(home: &Path) {
     if hooks_line.contains("plymouth-encrypt") {
         fail("HOOKS uses plymouth-encrypt, which no longer ships");
         hint("use the stock `encrypt` hook — it calls `plymouth ask-for-password` itself");
-    } else if hooks_line.split(|c: char| !c.is_alphanumeric() && c != '-')
+    } else if hooks_line
+        .split(|c: char| !c.is_alphanumeric() && c != '-')
         .any(|h| h == "plymouth")
     {
         pass("mkinitcpio HOOKS includes plymouth");
@@ -443,7 +459,9 @@ fn check_splash(home: &Path) {
     }
 
     // 3. Is our theme the selected one?
-    let theme = cmd_stdout("plymouth-set-default-theme", &[]).trim().to_string();
+    let theme = cmd_stdout("plymouth-set-default-theme", &[])
+        .trim()
+        .to_string();
     if theme == "dots" {
         pass("default theme is `dots`");
     } else if theme.is_empty() {
@@ -518,7 +536,10 @@ image/png=gimp.desktop
         assert_eq!(map.get("text/html").unwrap(), "firefox.desktop");
         // only the first of a semicolon list
         assert_eq!(map.get("video/mp4").unwrap(), "vlc-8.desktop");
-        assert_eq!(map.get("inode/directory").unwrap(), "org.gnome.Nautilus.desktop");
+        assert_eq!(
+            map.get("inode/directory").unwrap(),
+            "org.gnome.Nautilus.desktop"
+        );
         // other sections are not defaults
         assert!(!map.contains_key("image/png"));
         assert_eq!(map.len(), 3);

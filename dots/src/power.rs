@@ -113,10 +113,7 @@ pub fn icon(profile: &str) -> &'static str {
 pub fn menu() -> Result<()> {
     let choices = available()?;
     let active = current();
-    let items: Vec<(&str, &str)> = choices
-        .iter()
-        .map(|p| (icon(p), p.as_str()))
-        .collect();
+    let items: Vec<(&str, &str)> = choices.iter().map(|p| (icon(p), p.as_str())).collect();
 
     let prompt = match &active {
         Some(a) => format!("power — now {}", a),
@@ -154,7 +151,10 @@ mod tests {
 
     #[test]
     fn handles_a_single_profile_machine() {
-        assert_eq!(parse_list("* balanced:\n    CpuDriver: none\n"), vec!["balanced"]);
+        assert_eq!(
+            parse_list("* balanced:\n    CpuDriver: none\n"),
+            vec!["balanced"]
+        );
     }
 
     #[test]

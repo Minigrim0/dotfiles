@@ -116,7 +116,14 @@ fn render_assets(dir: &Path) -> Result<()> {
     );
 
     let logo = dir.join("logo.png");
-    run(im, &[&src.to_string_lossy(), "-strip", &format!("PNG24:{}", logo.display())])?;
+    run(
+        im,
+        &[
+            &src.to_string_lossy(),
+            "-strip",
+            &format!("PNG24:{}", logo.display()),
+        ],
+    )?;
 
     let (w, h) = (ENTRY_W as f64, ENTRY_H as f64);
     let r = h / 2.0 - 1.0;
@@ -174,10 +181,7 @@ fn install(dir: &Path) -> Result<()> {
 
     // -T so the destination is the directory itself rather than a nested copy
     // on a second run.
-    run(
-        "sudo",
-        &["cp", "-rLT", &dir.to_string_lossy(), SYSTEM_DIR],
-    )?;
+    run("sudo", &["cp", "-rLT", &dir.to_string_lossy(), SYSTEM_DIR])?;
     arrow!("installed · {}", SYSTEM_DIR);
 
     run("sudo", &["plymouth-set-default-theme", THEME])?;
@@ -188,7 +192,10 @@ fn install(dir: &Path) -> Result<()> {
         .args(["mkinitcpio", "-P"])
         .status()
         .context("running mkinitcpio")?;
-    anyhow::ensure!(status.success(), "mkinitcpio failed — boot config unchanged");
+    anyhow::ensure!(
+        status.success(),
+        "mkinitcpio failed — boot config unchanged"
+    );
 
     Ok(())
 }
@@ -209,7 +216,9 @@ pub fn apply() -> Result<()> {
     ok!("Splash applied — visible on the next boot");
     if !kernel_has_splash() {
         warn!("kernel cmdline has no `splash` — plymouth will stay silent");
-        arrow!("add it to GRUB_CMDLINE_LINUX_DEFAULT and run `sudo grub-mkconfig -o /boot/grub/grub.cfg`");
+        arrow!(
+            "add it to GRUB_CMDLINE_LINUX_DEFAULT and run `sudo grub-mkconfig -o /boot/grub/grub.cfg`"
+        );
     }
     Ok(())
 }
@@ -310,6 +319,10 @@ fn image_size(im: &str, path: &Path) -> Result<(u32, u32)> {
     let h = it.next().and_then(|v| v.parse().ok());
     match (w, h) {
         (Some(w), Some(h)) => Ok((w, h)),
-        _ => anyhow::bail!("unexpected size output for {}: {}", path.display(), s.trim()),
+        _ => anyhow::bail!(
+            "unexpected size output for {}: {}",
+            path.display(),
+            s.trim()
+        ),
     }
 }

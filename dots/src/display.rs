@@ -48,7 +48,11 @@ impl Output {
         let w = (self.width as f64 / self.scale).round() as i32;
         let h = (self.height as f64 / self.scale).round() as i32;
         // Odd transforms (90 / 270) swap the axes.
-        if self.transform % 2 == 1 { (h, w) } else { (w, h) }
+        if self.transform % 2 == 1 {
+            (h, w)
+        } else {
+            (w, h)
+        }
     }
 
     /// The `monitor =` rule that reproduces this output's current state.
@@ -155,7 +159,11 @@ fn keyword(rule: &str) -> Result<()> {
         .args(["keyword", "monitor", rule])
         .status()
         .context("running hyprctl keyword monitor")?;
-    anyhow::ensure!(status.success(), "hyprctl keyword monitor '{}' failed", rule);
+    anyhow::ensure!(
+        status.success(),
+        "hyprctl keyword monitor '{}' failed",
+        rule
+    );
     Ok(())
 }
 
@@ -284,7 +292,11 @@ pub fn parse_at(spec: &str) -> Result<(i32, i32)> {
 pub fn resolve(outputs: &[Output], moving: &Output, placement: &Placement) -> Result<(i32, i32)> {
     let anchor_of = |name: &str| -> Result<(i32, i32, i32, i32)> {
         let a = find(outputs, name)?;
-        anyhow::ensure!(a.name != moving.name, "cannot place {} against itself", a.name);
+        anyhow::ensure!(
+            a.name != moving.name,
+            "cannot place {} against itself",
+            a.name
+        );
         let (w, h) = a.logical_size();
         Ok((a.x, a.y, w, h))
     };
@@ -512,12 +524,7 @@ fn pick_rotation() -> Result<()> {
     let Some(o) = pick_output("display")? else {
         return Ok(());
     };
-    let items = [
-        ("󰸱", "Normal"),
-        ("󰑦", "90"),
-        ("󰑨", "180"),
-        ("󰑧", "270"),
-    ];
+    let items = [("󰸱", "Normal"), ("󰑦", "90"), ("󰑨", "180"), ("󰑧", "270")];
     let Some(choice) = wofi_grid(&o.name, &items) else {
         return Ok(());
     };
@@ -580,9 +587,15 @@ mod tests {
 
     #[test]
     fn logical_size_accounts_for_scale_and_rotation() {
-        assert_eq!(out("a", 3840, 2160, 0, 0, 2.0, 0).logical_size(), (1920, 1080));
+        assert_eq!(
+            out("a", 3840, 2160, 0, 0, 2.0, 0).logical_size(),
+            (1920, 1080)
+        );
         // 90° swaps the axes after scaling
-        assert_eq!(out("a", 2560, 1440, 0, 0, 1.0, 1).logical_size(), (1440, 2560));
+        assert_eq!(
+            out("a", 2560, 1440, 0, 0, 1.0, 1).logical_size(),
+            (1440, 2560)
+        );
     }
 
     #[test]
@@ -621,7 +634,10 @@ mod tests {
             resolve(&outs, &b, &Placement::Above("HDMI-A-1".into())).unwrap(),
             (0, -1440)
         );
-        assert_eq!(resolve(&outs, &b, &Placement::At(10, 20)).unwrap(), (10, 20));
+        assert_eq!(
+            resolve(&outs, &b, &Placement::At(10, 20)).unwrap(),
+            (10, 20)
+        );
     }
 
     #[test]

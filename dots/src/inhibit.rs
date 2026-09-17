@@ -38,7 +38,11 @@ fn is_our_inhibitor(pid: u32) -> bool {
 
 /// The pid of the running inhibitor, if there is one.
 pub fn holder() -> Option<u32> {
-    let pid: u32 = std::fs::read_to_string(pidfile()).ok()?.trim().parse().ok()?;
+    let pid: u32 = std::fs::read_to_string(pidfile())
+        .ok()?
+        .trim()
+        .parse()
+        .ok()?;
     is_our_inhibitor(pid).then_some(pid)
 }
 

@@ -209,12 +209,11 @@ async fn run(cli: Cli) -> Result<()> {
             MonitorCmd::Get => monitor::get()?,
 
             MonitorCmd::Modes { monitor: mon } => display::modes(mon.as_deref())?,
-            MonitorCmd::Mode { mode, monitor: mon } => {
-                display::set_mode(mon.as_deref(), &mode)?
-            }
-            MonitorCmd::Scale { scale, monitor: mon } => {
-                display::set_scale(mon.as_deref(), scale)?
-            }
+            MonitorCmd::Mode { mode, monitor: mon } => display::set_mode(mon.as_deref(), &mode)?,
+            MonitorCmd::Scale {
+                scale,
+                monitor: mon,
+            } => display::set_scale(mon.as_deref(), scale)?,
             MonitorCmd::Position {
                 monitor: mon,
                 at,
@@ -242,9 +241,10 @@ async fn run(cli: Cli) -> Result<()> {
                 };
                 display::set_position(mon.as_deref(), &placement)?
             }
-            MonitorCmd::Rotate { degrees, monitor: mon } => {
-                display::rotate(mon.as_deref(), degrees)?
-            }
+            MonitorCmd::Rotate {
+                degrees,
+                monitor: mon,
+            } => display::rotate(mon.as_deref(), degrees)?,
             MonitorCmd::Enable { monitor: mon } => display::set_enabled(&mon, true)?,
             MonitorCmd::Disable { monitor: mon } => display::set_enabled(&mon, false)?,
             MonitorCmd::Mirror { monitor: mon, onto } => display::mirror(&mon, &onto)?,
